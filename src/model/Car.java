@@ -2,11 +2,8 @@ package model;
 
 import model.components.*;
 
-import java.util.UUID;
-
 public class Car {
-    private final String id;
-    private final String name;
+    private String name;
     private Manager owner;
     private Platform platform;
     private Transmission transmission;
@@ -18,7 +15,6 @@ public class Car {
     private boolean isReady;
 
     public Car(String name, Manager owner) {
-        this.id = UUID.randomUUID().toString();
         this.name = name;
         this.owner = owner;
         this.isReady = false;
@@ -83,7 +79,7 @@ public class Car {
         return (platform.calculatePerformance() + transmission.calculatePerformance() +
                 engine.calculatePerformance() + suspension.calculatePerformance()
                 + aeroKit.calculatePerformance() + tireKit.calculatePerformance() +
-                transmission.calculatePerformance()) / 7;
+                breakKit.calculatePerformance()) / 7;
     }
 
     public void addWear(double receivedWear) {

@@ -1,7 +1,7 @@
 package model.components;
 
 public class TireKit extends Component {
-    private int strength;
+    private final int strength; // от 1 до 10
 
     public TireKit(String name, int weight, double price, int strength) {
         super(name, weight, price);
@@ -13,6 +13,6 @@ public class TireKit extends Component {
     }
 
     public double calculatePerformance() {
-        return strength * getWear();
+        return strength * (1 - getWear() / 100);
     }
 }

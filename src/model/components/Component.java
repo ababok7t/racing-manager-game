@@ -1,14 +1,12 @@
 package model.components;
 
 public abstract class Component {
-    private final String id;
     private final String name;
-    private int weight;
-    private double price;
-    private double wear;
+    private final int weight;
+    private final double price;
+    private double wear; // от 0 до 1
 
     protected Component(String name, int weight, double price) {
-        this.id = java.util.UUID.randomUUID().toString();
         this.name = name;
         this.weight = weight;
         this.price = price;
@@ -31,8 +29,8 @@ public abstract class Component {
         return wear;
     }
 
-    public void addWear(double receivedWear) {
-        this.wear = Math.min(receivedWear, 100);
+    public void setWear(double wear) {
+        this.wear = wear;
     }
 
     public void repair() {
@@ -40,7 +38,11 @@ public abstract class Component {
     }
 
     public boolean isBroken() {
-        return wear >= 100;
+        return wear >= 1;
+    }
+
+    public void addWear(double receivedWear) {
+        this.wear = Math.min(wear + receivedWear, 1);
     }
 
     public abstract double calculatePerformance();

@@ -1,7 +1,7 @@
 package model.components;
 
 public class Platform extends Component {
-    private int maxEngineWeight;
+    private final int maxEngineWeight;
 
     public Platform(String name, int weight, double price, int maxEngineWeight) {
         super(name, weight, price);
@@ -13,6 +13,6 @@ public class Platform extends Component {
     }
 
     public double calculatePerformance() {
-        return maxEngineWeight * getWear();
+        return maxEngineWeight * (1 - getWear() / 100) / 100;
     }
 }

@@ -1,7 +1,7 @@
 package model.components;
 
 public class AeroKit extends Component {
-    private int aerodynamics;
+    private final int aerodynamics; // от 1 до 10
 
     public AeroKit(String name, int weight, double price, int aerodynamics) {
         super(name, weight, price);
@@ -13,6 +13,6 @@ public class AeroKit extends Component {
     }
 
     public double calculatePerformance() {
-        return aerodynamics * getWear();
+        return aerodynamics * (1 - getWear() / 100);
     }
 }

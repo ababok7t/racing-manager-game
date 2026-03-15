@@ -1,7 +1,7 @@
 package model.components;
 
 public class Suspension extends Component {
-    private int controllability;
+    private final int controllability; // от 1 до 10
 
     public Suspension(String name, int weight, double price, int controllability) {
         super(name, weight, price);
@@ -13,6 +13,6 @@ public class Suspension extends Component {
     }
 
     public double calculatePerformance() {
-        return controllability * getWear();
+        return controllability * (1 - getWear() / 100);
     }
 }

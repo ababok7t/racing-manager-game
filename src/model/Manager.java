@@ -6,7 +6,6 @@ import model.staff.*;
 import java.util.*;
 
 public class Manager {
-    private String id;
     private String name;
     private double budget;
     private int reputation;
@@ -17,7 +16,6 @@ public class Manager {
     private List<Contract> contracts;
 
     public Manager(String name, double budget) {
-        this.id = UUID.randomUUID().toString();
         this.name = name;
         this.budget = budget;
         this.reputation = 0;

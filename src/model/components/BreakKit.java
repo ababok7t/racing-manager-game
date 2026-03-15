@@ -1,7 +1,7 @@
 package model.components;
 
 public class BreakKit extends Component {
-    private int deceleration;
+    private final int deceleration; // от 1 до 10
 
     public BreakKit(String name, int weight, double price, int deceleration) {
         super(name, weight, price);
@@ -13,6 +13,6 @@ public class BreakKit extends Component {
     }
 
     public double calculatePerformance() {
-        return deceleration * getWear();
+        return deceleration * (1 - getWear() / 100);
     }
 }

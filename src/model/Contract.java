@@ -1,20 +1,18 @@
 package model;
 
-import java.util.UUID;
-
 public class Contract {
-    private final String id;
     private final String name;
-    private double price;
-    private int racesAmount;
-    private int minReputation;
+    private final double price;
+    private int numberOfRaces;
+    private final int minReputation;
+    private int racesCompleted;
 
     public Contract(String name, double price, int racesAmount, int minReputation) {
-        this.id = UUID.randomUUID().toString();
         this.name = name;
         this.price = price;
-        this.racesAmount = racesAmount;
+        this.numberOfRaces = racesAmount;
         this.minReputation = minReputation;
+        this.racesCompleted = 0;
     }
 
     public String getName() {
@@ -25,15 +23,19 @@ public class Contract {
         return price;
     }
 
-    public int getRacesAmount() {
-        return racesAmount;
+    public int getNumberOfRaces() {
+        return numberOfRaces;
     }
 
     public int getMinReputation() {
         return minReputation;
     }
 
-    public void decreaseRacesAmount() {
-        this.racesAmount = racesAmount--;
+    public int getRacesCompleted() {
+        return racesCompleted;
+    }
+
+    public void addRace() {
+        this.racesCompleted = racesCompleted + 1;
     }
 }
