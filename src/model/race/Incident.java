@@ -1,5 +1,9 @@
 package model.race;
 
+import model.components.AeroKit;
+import model.components.Component;
+import model.components.Suspension;
+
 public enum Incident {
     SPIN("Разворот", 7, false),
     AERO_DAMAGE("Повреждение аэродинамического пакета", 30, false),
@@ -15,6 +19,7 @@ public enum Incident {
         this.type = type;
         this.time = time;
         this.fatal = fatal;
+
     }
 
     public String getType() {
