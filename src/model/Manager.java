@@ -1,27 +1,98 @@
 package model;
 
-import model.components.*;
-import model.staff.*;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class Manager {
-    private String name;
+    private final String id;
+    private final String name;
     private double budget;
+
+    private int championshipPoints;
     private int reputation;
 
-    private List<Car> cars;
-    private Map<Class<? extends Staff>, List<Staff>> staff;
-    private Map<Class<? extends Component>, List<Component>> components;
-    private List<Contract> contracts;
+    private final List<String> carIds;
+    private final List<String> pilotIds;
+    private final List<String> engineerIds;
 
     public Manager(String name, double budget) {
+        this.id = UUID.randomUUID().toString();
         this.name = name;
         this.budget = budget;
         this.reputation = 0;
-        this.cars = new ArrayList<>();
-        this.staff = new HashMap<>();
-        this.components = new HashMap<>();
-        this.contracts = new ArrayList<>();
+        this.championshipPoints = 0;
+        this.carIds = new ArrayList<>();
+        this.pilotIds = new ArrayList<>();
+        this.engineerIds = new ArrayList<>();
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getBudget() {
+        return budget;
+    }
+
+    public void setBudget(double newBudget) {
+        this.budget = newBudget;
+    }
+
+    public int getChampionshipPoints() {
+        return championshipPoints;
+    }
+
+    public void addChampionshipPoints(int points) {
+        this.championshipPoints += points;
+    }
+
+    public void addPrizeMoney(double prizeMoney) {
+        this.budget += prizeMoney;
+    }
+
+    public boolean spendBudget(double amount) {
+        if (amount < 0) return false;
+        if (budget < amount) return false;
+        budget -= amount;
+        return true;
+    }
+
+    public List<String> getCarIds() {
+        return new ArrayList<>(carIds);
+    }
+
+    public void addCarId(String carId) {
+        if (carId != null && !carIds.contains(carId)) {
+            carIds.add(carId);
+        }
+    }
+
+    public List<String> getPilotIds() {
+        return new ArrayList<>(pilotIds);
+    }
+
+    public void addPilotId(String pilotId) {
+        if (pilotId != null && !pilotIds.contains(pilotId)) {
+            pilotIds.add(pilotId);
+        }
+    }
+
+    public List<String> getEngineerIds() {
+        return new ArrayList<>(engineerIds);
+    }
+
+    public void addEngineerId(String engineerId) {
+        if (engineerId != null && !engineerIds.contains(engineerId)) {
+            engineerIds.add(engineerId);
+        }
+    }
+
+    public int getReputation() {
+        return reputation;
     }
 }

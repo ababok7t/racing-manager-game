@@ -1,16 +1,22 @@
 package model.components;
 
 public abstract class Component {
+    private final String id;
     private final String name;
     private final int weight;
     private final double price;
-    private double wear; // от 0 до 1
+    private double wear; // износ в %, от 0 до 100
 
     protected Component(String name, int weight, double price) {
+        this.id = java.util.UUID.randomUUID().toString();
         this.name = name;
         this.weight = weight;
         this.price = price;
         this.wear = 0;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getName() {
@@ -30,7 +36,7 @@ public abstract class Component {
     }
 
     public void setWear(double wear) {
-        this.wear = wear;
+        this.wear = Math.max(0, Math.min(wear, 100));
     }
 
     public void repair() {
@@ -38,12 +44,28 @@ public abstract class Component {
     }
 
     public boolean isBroken() {
-        return wear >= 1;
+        return wear >= 100;
     }
 
     public void addWear(double receivedWear) {
-        this.wear = Math.min(wear + receivedWear, 1);
+        this.wear = Math.min(wear + receivedWear, 100);
     }
 
     public abstract double calculatePerformance();
+
+    /**
+     * Базовая характеристика компонента без учета износа (для отображения).
+     */
+    public abstract double getBasePerformance();
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() +
+                "{id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", weight=" + weight +
+                ", price=" + price +
+                ", wear=" + wear +
+                "%}";
+    }
 }

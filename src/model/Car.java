@@ -1,95 +1,135 @@
 package model;
 
 import model.components.*;
+import java.util.UUID;
 
 public class Car {
-    private String name;
-    private Manager owner;
-    private Platform platform;
-    private Transmission transmission;
+    private final String id;
+    private final String name;
+    private String managerId;
+
     private Engine engine;
+    private Transmission transmission;
     private Suspension suspension;
-    private AeroKit aeroKit;
-    private TireKit tireKit;
-    private BreakKit breakKit;
-    private boolean isReady;
+    private Aerodynamics aerodynamics;
+    private Tyres tyres;
 
-    public Car(String name, Manager owner) {
+    private boolean built;
+
+    public Car(String name) {
+        this.id = UUID.randomUUID().toString();
         this.name = name;
-        this.owner = owner;
-        this.isReady = false;
+        this.managerId = null;
+        this.built = false;
     }
 
-    public Platform getPlatform() {
-        return platform;
-    }
-    public void setPlatform(Platform newPlatform) {
-        this.platform = newPlatform;
+    public String getId() {
+        return id;
     }
 
-    public Transmission getTransmission() {
-        return transmission;
+    public String getName() {
+        return name;
     }
-    public void setTransmission(Transmission newTransmission) {
-        this.transmission = newTransmission;
+
+    public String getManagerId() {
+        return managerId;
+    }
+
+    public void setManagerId(String newManagerId) {
+        this.managerId = newManagerId;
     }
 
     public Engine getEngine() {
         return engine;
     }
+
     public void setEngine(Engine newEngine) {
         this.engine = newEngine;
+    }
+
+    public Transmission getTransmission() {
+        return transmission;
+    }
+
+    public void setTransmission(Transmission newTransmission) {
+        this.transmission = newTransmission;
     }
 
     public Suspension getSuspension() {
         return suspension;
     }
+
     public void setSuspension(Suspension newSuspension) {
         this.suspension = newSuspension;
     }
 
-    public AeroKit getAeroKit() {
-        return aeroKit;
-    }
-    public void setAeroKit(AeroKit newAeroKit) {
-        this.aeroKit = newAeroKit;
+    public Aerodynamics getAerodynamics() {
+        return aerodynamics;
     }
 
-    public TireKit getTireKit() {
-        return tireKit;
-    }
-    public void setTireKit(TireKit newTireKit) {
-        this.tireKit =  newTireKit;
+    public void setAerodynamics(Aerodynamics newAerodynamics) {
+        this.aerodynamics = newAerodynamics;
     }
 
-    public BreakKit getBreakKit() {
-        return breakKit;
-    }
-    public void setBreakKit(BreakKit newBreakKit) {
-        this.breakKit = newBreakKit;
+    public Tyres getTyres() {
+        return tyres;
     }
 
-    public boolean isReady() {
-        return platform != null && transmission != null && engine != null && suspension != null
-                && aeroKit != null && tireKit != null && breakKit != null;
+    public void setTyres(Tyres newTyres) {
+        this.tyres = newTyres;
+    }
+
+    public void setBuilt(boolean built) {
+        this.built = built;
+    }
+
+    public boolean isComplete() {
+        return built && engine != null && transmission != null && suspension != null && aerodynamics != null && tyres != null;
+    }
+
+    public boolean hasBrokenComponents() {
+        return (engine != null && engine.isBroken())
+                || (transmission != null && transmission.isBroken())
+                || (suspension != null && suspension.isBroken())
+                || (aerodynamics != null && aerodynamics.isBroken())
+                || (tyres != null && tyres.isBroken());
     }
 
     public double calculatePerformance() {
-        if (!isReady) return 0;
-        return (platform.calculatePerformance() + transmission.calculatePerformance() +
-                engine.calculatePerformance() + suspension.calculatePerformance()
-                + aeroKit.calculatePerformance() + tireKit.calculatePerformance() +
-                breakKit.calculatePerformance()) / 7;
+        if (!isComplete()) return 0;
+        double sum = engine.calculatePerformance()
+                + transmission.calculatePerformance()
+                + suspension.calculatePerformance()
+                + aerodynamics.calculatePerformance()
+                + tyres.calculatePerformance();
+        return sum / 5.0;
     }
 
-    public void addWear(double receivedWear) {
-        platform.addWear(receivedWear);
-        transmission.addWear(receivedWear);
-        engine.addWear(receivedWear);
-        suspension.addWear(receivedWear);
-        aeroKit.addWear(receivedWear);
-        tireKit.addWear(receivedWear);
-        breakKit.addWear(receivedWear);
+    public double getWearPercentage() {
+        if (!isComplete()) return 0;
+        return (engine.getWear() + transmission.getWear() + suspension.getWear()
+                + aerodynamics.getWear() + tyres.getWear()) / 5.0;
     }
 
+    public void increaseWear(double receivedWear) {
+        // Увеличиваем износ для всех установленных деталей
+        if (engine != null) engine.addWear(receivedWear);
+        if (transmission != null) transmission.addWear(receivedWear);
+        if (suspension != null) suspension.addWear(receivedWear);
+        if (aerodynamics != null) aerodynamics.addWear(receivedWear);
+        if (tyres != null) tyres.addWear(receivedWear);
+    }
+
+    public void repair() {
+        if (engine != null) engine.repair();
+        if (transmission != null) transmission.repair();
+        if (suspension != null) suspension.repair();
+        if (aerodynamics != null) aerodynamics.repair();
+        if (tyres != null) tyres.repair();
+    }
+
+    @Override
+    public String toString() {
+        return "Car{name='" + name + "', wear=" + String.format("%.1f", getWearPercentage()) + "%}";
+    }
 }

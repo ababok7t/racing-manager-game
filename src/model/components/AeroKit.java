@@ -15,4 +15,9 @@ public class AeroKit extends Component {
     public double calculatePerformance() {
         return aerodynamics * (1 - getWear() / 100);
     }
+
+    @Override
+    public double getBasePerformance() {
+        return aerodynamics;
+    }
 }

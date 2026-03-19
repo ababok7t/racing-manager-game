@@ -13,6 +13,11 @@ public class Platform extends Component {
     }
 
     public double calculatePerformance() {
-        return maxEngineWeight * (1 - getWear() / 100) / 100;
+        return getBasePerformance() * (1 - getWear() / 100.0);
+    }
+
+    @Override
+    public double getBasePerformance() {
+        return maxEngineWeight;
     }
 }

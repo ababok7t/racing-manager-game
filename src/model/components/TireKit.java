@@ -15,4 +15,9 @@ public class TireKit extends Component {
     public double calculatePerformance() {
         return strength * (1 - getWear() / 100);
     }
+
+    @Override
+    public double getBasePerformance() {
+        return strength;
+    }
 }

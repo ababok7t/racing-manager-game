@@ -1,19 +1,28 @@
 package model.staff;
 
-import model.Manager;
-
 import java.util.UUID;
 
 public abstract class Staff {
+    private final String id;
     private final String name;
     private double price;
     private int experience;
-    private Manager manager;
+
+    // Хранится в виде ID, а не ссылки на Manager, чтобы не создавать сильные связи.
+    private String managerId;
+    private boolean hired;
 
     public Staff(String name, double price, int experience) {
+        this.id = UUID.randomUUID().toString();
         this.name = name;
         this.price = price;
         this.experience = experience;
+        this.managerId = null;
+        this.hired = false;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getName() {
@@ -32,12 +41,20 @@ public abstract class Staff {
         this.experience = getExperience() + exp;
     }
 
-    public Manager getManager() {
-        return manager;
+    public String getManagerId() {
+        return managerId;
     }
 
-    public void setManager(Manager newManager) {
-        this.manager = newManager;
+    public void setManagerId(String newManagerId) {
+        this.managerId = newManagerId;
+    }
+
+    public boolean isHired() {
+        return hired;
+    }
+
+    public void setHired(boolean hired) {
+        this.hired = hired;
     }
 
     public abstract double calculatePerformance();

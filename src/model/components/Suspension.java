@@ -1,18 +1,37 @@
 package model.components;
 
 public class Suspension extends Component {
-    private final int controllability; // от 1 до 10
+    private final double baseStability;
+    private final int maxWeight;
 
-    public Suspension(String name, int weight, double price, int controllability) {
+    public Suspension(String name,
+                       double price,
+                       double baseStability,
+                       int maxWeight,
+                       int weight) {
         super(name, weight, price);
-        this.controllability = controllability;
+        this.baseStability = baseStability;
+        this.maxWeight = maxWeight;
     }
 
-    public int getControllability() {
-        return controllability;
+    public double getBaseStability() {
+        return baseStability;
+    }
+
+    public int getMaxWeight() {
+        return maxWeight;
+    }
+
+    public boolean canSupportWeight(int engineWeight) {
+        return engineWeight <= maxWeight;
     }
 
     public double calculatePerformance() {
-        return controllability * (1 - getWear() / 100);
+        return getBasePerformance() * (1 - getWear() / 100.0);
+    }
+
+    @Override
+    public double getBasePerformance() {
+        return baseStability * 10.0;
     }
 }

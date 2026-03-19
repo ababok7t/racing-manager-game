@@ -15,4 +15,9 @@ public class BreakKit extends Component {
     public double calculatePerformance() {
         return deceleration * (1 - getWear() / 100);
     }
+
+    @Override
+    public double getBasePerformance() {
+        return deceleration;
+    }
 }
