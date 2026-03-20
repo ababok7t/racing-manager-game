@@ -33,15 +33,40 @@ public class RaceService {
 
         double baseLapTime = 90.0;
         double lapTime = baseLapTime / (carPerformance * pilotPerformance * engineerBonus);
+
+        // Учет особенностей трассы через состав участков (прямые/повороты/подъёмы/спуски).
+        List<TrackUnit> units = track.getTrackUnits();
+        double avgSpeedMod = units.stream()
+                .mapToDouble(u -> u.getType().getSpeedModificator())
+                .average()
+                .orElse(1.0);
+        double avgControlMod = units.stream()
+                .mapToDouble(u -> u.getType().getControlModificator())
+                .average()
+                .orElse(1.0);
+
+        // speedModificator меньше 1 => медленнее => больше время.
+        if (avgSpeedMod > 0) {
+            lapTime *= 1.0 / avgSpeedMod;
+        }
+
+        // controlModificator больше 1 => тяжелее контроль, и сильнее бьёт по низкой согласованности пилота.
+        double consistency = pilot.getConsistency();
+        double controlPenalty = 1.0 + Math.max(0.0, avgControlMod - 1.0) * (1.0 - consistency);
+        lapTime *= controlPenalty;
+
         lapTime *= (0.97 + random.nextDouble() * 0.06);
 
         return lapTime;
     }
 
-    public Optional<Component> checkIncident(Car car, Pilot pilot) {
+    public Optional<Incident> checkIncident(Car car, Pilot pilot) {
         if (!car.isComplete()) return Optional.empty();
 
         double avgWear = car.getWearPercentage() / 100;
+        // По методичке инциденты возможны, когда износ уже достаточно высокий.
+        if (avgWear < 0.5) return Optional.empty();
+
         double incidentProb = avgWear * pilot.getAggression() * 0.1;
 
         if (random.nextDouble() < incidentProb) {
@@ -54,7 +79,24 @@ public class RaceService {
 
             if (!components.isEmpty()) {
                 Component broken = components.get(random.nextInt(components.size()));
-                return Optional.of(broken);
+                // Компонент после отказа становится разрушенным и не чинится.
+                broken.setWear(100);
+
+                // Маппинг типа компонента -> тип инцидента (по методичке).
+                Incident incident;
+                if (broken instanceof Engine) {
+                    incident = Incident.ENGINE_ERROR;
+                } else if (broken instanceof Aerodynamics) {
+                    incident = Incident.AERO_DAMAGE;
+                } else if (broken instanceof Tyres) {
+                    incident = Incident.COLLISION;
+                } else if (broken instanceof Suspension || broken instanceof Transmission) {
+                    incident = Incident.BREAK_ERROR;
+                } else {
+                    incident = Incident.BREAK_ERROR;
+                }
+
+                return Optional.of(incident);
             }
         }
 
@@ -100,11 +142,10 @@ public class RaceService {
                     totalTime += lapTime;
 
                     if (lap % 10 == 0 && lap > 0 && !hasIncident) {
-                        Optional<Component> incident = checkIncident(carOpt.get(), pilotOpt.get());
+                        Optional<Incident> incident = checkIncident(carOpt.get(), pilotOpt.get());
                         if (incident.isPresent()) {
                             hasIncident = true;
-                            race.addIncident(managerId,
-                                    "Поломка " + incident.get().getName() + " на круге " + (lap + 1));
+                            race.addIncident(managerId, incident.get());
                         }
                     }
                 }

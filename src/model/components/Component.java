@@ -40,6 +40,8 @@ public abstract class Component {
     }
 
     public void repair() {
+        // Разрушенный компонент не подлежит восстановлению (по методичке).
+        if (isBroken()) return;
         this.wear = 0;
     }
 

@@ -4,64 +4,64 @@ import model.*;
 import model.race.*;
 import model.staff.*;
 import service.GameService;
-import view.ConsoleView;
+import view.ConsoleIO;
 import java.util.*;
 
 public class InfoController {
     private final GameService gameService;
-    private final ConsoleView view;
+    private final ConsoleIO io;
 
-    public InfoController(GameService gameService, ConsoleView view) {
+    public InfoController(GameService gameService, ConsoleIO io) {
         this.gameService = gameService;
-        this.view = view;
+        this.io = io;
     }
 
     public void viewPilots() {
-        view.clearScreen();
+        io.clearScreen();
         List<Pilot> pilots = gameService.getPlayerPilots();
 
-        view.showMessage("\n=== ВАШИ ПИЛОТЫ ===");
+        io.showMessage("\n=== ВАШИ ПИЛОТЫ ===");
 
         if (pilots.isEmpty()) {
-            view.showMessage("У вас пока нет пилотов.");
-            view.showMessage("Наймите пилотов в разделе 5.");
+            io.showMessage("У вас пока нет пилотов.");
+            io.showMessage("Наймите пилотов в разделе 5.");
         } else {
             displayPilots(pilots);
         }
 
-        view.waitForEnter();
+        io.waitForEnter();
     }
 
     private void displayPilots(List<Pilot> pilots) {
         for (int i = 0; i < pilots.size(); i++) {
             Pilot pilot = pilots.get(i);
-            view.showMessage("\n" + (i + 1) + ". " + pilot.getName());
-            view.showMessage("   Возраст: " + pilot.getAge());
-            view.showMessage("   Навык: " + String.format("%.1f", pilot.getSkill()));
-            view.showMessage("   Опыт: " + String.format("%.0f", pilot.getExperience()));
-            view.showMessage("   Агрессивность: " + (pilot.getAggression() * 100) + "%");
-            view.showMessage("   Стабильность: " + (pilot.getConsistency() * 100) + "%");
+            io.showMessage("\n" + (i + 1) + ". " + pilot.getName());
+            io.showMessage("   Возраст: " + pilot.getAge());
+            io.showMessage("   Навык: " + String.format("%.1f", pilot.getSkill()));
+            io.showMessage("   Опыт: " + String.format("%d", pilot.getExperience()));
+            io.showMessage("   Агрессивность: " + (pilot.getAggression() * 100) + "%");
+            io.showMessage("   Стабильность: " + (pilot.getConsistency() * 100) + "%");
         }
     }
 
     public void viewRaceStatistics() {
-        view.clearScreen();
+        io.clearScreen();
         String playerId = gameService.getPlayerManager().getId();
         List<Race> races = gameService.getRaceRepository().findByManagerId(playerId);
 
-        view.showMessage("\n=== СТАТИСТИКА ВАШИХ ГОНОК ===");
-        view.showMessage("Всего гонок: " + races.size());
+        io.showMessage("\n=== СТАТИСТИКА ВАШИХ ГОНОК ===");
+        io.showMessage("Всего гонок: " + races.size());
 
         if (races.isEmpty()) {
-            view.showMessage("\nВы еще не участвовали в гонках.");
-            view.showMessage("Начните гонку в разделе 1!");
+            io.showMessage("\nВы еще не участвовали в гонках.");
+            io.showMessage("Начните гонку в разделе 1!");
         } else {
             RaceStatistics stats = calculateStats(races, playerId);
             displayStats(stats);
             displayRecentRaces(races, playerId);
         }
 
-        view.waitForEnter();
+        io.waitForEnter();
     }
 
     private RaceStatistics calculateStats(List<Race> races, String playerId) {
@@ -83,61 +83,61 @@ public class InfoController {
     }
 
     private void displayStats(RaceStatistics stats) {
-        view.showMessage("\n📊 Общая статистика:");
-        view.showMessage("   🏆 Победы: " + stats.wins);
-        view.showMessage("   🥉 Подиумы: " + stats.podiums);
-        view.showMessage("   ⭐ Всего очков: " + stats.totalPoints);
-        view.showMessage("   🏁 Лучший результат: " + stats.bestPosition + " место (" + stats.bestRace + ")");
-        view.showMessage("   📈 Очков в среднем за гонку: " +
+        io.showMessage("\n📊 Общая статистика:");
+        io.showMessage("   🏆 Победы: " + stats.wins);
+        io.showMessage("   🥉 Подиумы: " + stats.podiums);
+        io.showMessage("   ⭐ Всего очков: " + stats.totalPoints);
+        io.showMessage("   🏁 Лучший результат: " + stats.bestPosition + " место (" + stats.bestRace + ")");
+        io.showMessage("   📈 Очков в среднем за гонку: " +
                 String.format("%.1f", (double) stats.totalPoints / stats.racesCount));
     }
 
     private void displayRecentRaces(List<Race> races, String playerId) {
-        view.showMessage("\n📅 Последние 5 гонок:");
+        io.showMessage("\n📅 Последние 5 гонок:");
         List<Race> recent = races.subList(Math.max(0, races.size() - 5), races.size());
 
         for (Race race : recent) {
             int pos = race.getPosition(playerId);
             String medal = pos == 1 ? "🥇" : (pos == 2 ? "🥈" : (pos == 3 ? "🥉" : "  "));
-            view.showMessage("   " + medal + " " + race.getTrack().getName() +
+            io.showMessage("   " + medal + " " + race.getTrack().getName() +
                     ": " + pos + " место (" + race.getPoints(pos) + " очков)");
         }
     }
 
     public void viewOtherTeams() {
-        view.clearScreen();
+        io.clearScreen();
         List<Manager> opponents = gameService.getBotService().getOpponentManagers();
 
-        view.showMessage("\n=== КОМАНДЫ СОПЕРНИКОВ ===");
+        io.showMessage("\n=== КОМАНДЫ СОПЕРНИКОВ ===");
 
         if (opponents.isEmpty()) {
-            view.showMessage("Нет команд-соперников.");
+            io.showMessage("Нет команд-соперников.");
         } else {
             opponents.sort((a, b) -> b.getChampionshipPoints() - a.getChampionshipPoints());
             displayOpponents(opponents);
             showPlayerRanking(opponents);
         }
 
-        view.waitForEnter();
+        io.waitForEnter();
     }
 
     private void displayOpponents(List<Manager> opponents) {
         for (int i = 0; i < opponents.size(); i++) {
             Manager team = opponents.get(i);
-            view.showMessage("\n" + (i + 1) + ". " + team.getName());
-            view.showMessage("   Бюджет: $" + String.format("%,.0f", team.getBudget()));
-            view.showMessage("   Очки: " + team.getChampionshipPoints());
+            io.showMessage("\n" + (i + 1) + ". " + team.getName());
+            io.showMessage("   Бюджет: $" + String.format("%,.0f", team.getBudget()));
+            io.showMessage("   Очки: " + team.getChampionshipPoints());
 
             List<Pilot> pilots = gameService.getPilotRepository().findAllById(team.getPilotIds());
             if (!pilots.isEmpty()) {
-                view.showMessage("   Пилоты:");
+                io.showMessage("   Пилоты:");
                 for (Pilot pilot : pilots) {
-                    view.showMessage("     • " + pilot.getName() +
+                    io.showMessage("     • " + pilot.getName() +
                             " (навык: " + String.format("%.1f", pilot.getSkill()) + ")");
                 }
             }
 
-            view.showMessage("   Болидов: " + team.getCarIds().size());
+            io.showMessage("   Болидов: " + team.getCarIds().size());
         }
     }
 
@@ -150,19 +150,19 @@ public class InfoController {
             }
         }
 
-        view.showMessage("\n📊 Ваша позиция: " + playerRank + " из " + (opponents.size() + 1));
+        io.showMessage("\n📊 Ваша позиция: " + playerRank + " из " + (opponents.size() + 1));
     }
 
     public void viewRecentResults() {
-        view.clearScreen();
+        io.clearScreen();
 
         String playerId = gameService.getPlayerManager().getId();
         List<Race> races = gameService.getRaceRepository().findByManagerId(playerId);
 
-        view.showMessage("\n=== ПОСЛЕДНИЕ РЕЗУЛЬТАТЫ ===");
+        io.showMessage("\n=== ПОСЛЕДНИЕ РЕЗУЛЬТАТЫ ===");
         if (races.isEmpty()) {
-            view.showMessage("У вас еще нет результатов.");
-            view.waitForEnter();
+            io.showMessage("У вас еще нет результатов.");
+            io.waitForEnter();
             return;
         }
 
@@ -173,7 +173,7 @@ public class InfoController {
             displayRaceResult(race, playerId);
         }
 
-        view.waitForEnter();
+        io.waitForEnter();
     }
 
     private void displayRaceResult(Race race, String playerId) {
@@ -181,13 +181,14 @@ public class InfoController {
         double prize = race.getPrizeMoney(pos);
         int points = race.getPoints(pos);
 
-        view.showMessage("\n🏁 " + race.getTrack().getName());
-        view.showMessage("  Место: " + pos);
-        view.showMessage("  Призовые: $" + String.format("%,.0f", prize));
-        view.showMessage("  Очки: " + points);
+        io.showMessage("\n🏁 " + race.getTrack().getName());
+        io.showMessage("  Место: " + pos);
+        io.showMessage("  Призовые: $" + String.format("%,.0f", prize));
+        io.showMessage("  Очки: " + points);
 
         if (race.getIncidents().containsKey(playerId)) {
-            view.showWarning("  Инцидент: " + race.getIncidents().get(playerId));
+            Incident incident = race.getIncidents().get(playerId);
+            io.showWarning("  Инцидент: " + incident.getType());
         }
     }
 

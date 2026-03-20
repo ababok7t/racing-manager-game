@@ -1,5 +1,6 @@
 package service;
 
+import model.Contract;
 import model.market.*;
 import model.components.*;
 import model.staff.*;
@@ -9,7 +10,6 @@ import java.util.*;
 public class MarketService {
     private final MarketRepository marketRepository;
     private Market mainMarket;
-    @SuppressWarnings("unused")
     private final GameService gameService;
 
     public MarketService() {
@@ -55,6 +55,8 @@ public class MarketService {
         addPilots();
         // Добавляем инженеров
         addEngineers();
+        // Добавляем контракты со спонсорами
+        addContracts();
     }
 
     private void addComponents() {
@@ -132,12 +134,21 @@ public class MarketService {
                 62400, MarketItem.ItemType.ENGINEER));
     }
 
-    public Market getMainMarket() {
-        return mainMarket;
+    private void addContracts() {
+        // price = стоимость подписания; payout расчитывается в GameService (за гонку).
+        mainMarket.addItem(new MarketItem<>(
+                new Contract("GT Спонсор (Базовый)", 200000, 3, 0),
+                200000, MarketItem.ItemType.CONTRACT));
+        mainMarket.addItem(new MarketItem<>(
+                new Contract("АэроПартнер (Премиум)", 500000, 5, 10),
+                500000, MarketItem.ItemType.CONTRACT));
+        mainMarket.addItem(new MarketItem<>(
+                new Contract("Элитный ТехСоюз", 900000, 6, 20),
+                900000, MarketItem.ItemType.CONTRACT));
     }
 
-    public MarketRepository getMarketRepository() {
-        return marketRepository;
+    public Market getMainMarket() {
+        return mainMarket;
     }
 
     public List<MarketItem<?>> getAllItems() {
@@ -196,6 +207,12 @@ public class MarketService {
 
     public List<MarketItem<Engineer>> getAvailableEngineers() {
         return mainMarket.getEngineers().stream()
+                .filter(MarketItem::isAvailable)
+                .toList();
+    }
+
+    public List<MarketItem<Contract>> getAvailableContracts() {
+        return mainMarket.getContracts().stream()
                 .filter(MarketItem::isAvailable)
                 .toList();
     }

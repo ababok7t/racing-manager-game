@@ -15,6 +15,7 @@ public class Manager {
     private final List<String> carIds;
     private final List<String> pilotIds;
     private final List<String> engineerIds;
+    private final List<String> contractIds;
 
     public Manager(String name, double budget) {
         this.id = UUID.randomUUID().toString();
@@ -25,6 +26,7 @@ public class Manager {
         this.carIds = new ArrayList<>();
         this.pilotIds = new ArrayList<>();
         this.engineerIds = new ArrayList<>();
+        this.contractIds = new ArrayList<>();
     }
 
     public String getId() {
@@ -94,5 +96,23 @@ public class Manager {
 
     public int getReputation() {
         return reputation;
+    }
+
+    public void addReputation(int delta) {
+        reputation = Math.max(0, reputation + delta);
+    }
+
+    public List<String> getContractIds() {
+        return new ArrayList<>(contractIds);
+    }
+
+    public void addContractId(String contractId) {
+        if (contractId != null && !contractIds.contains(contractId)) {
+            contractIds.add(contractId);
+        }
+    }
+
+    public void removeContractId(String contractId) {
+        contractIds.remove(contractId);
     }
 }

@@ -15,6 +15,7 @@ public class GameService {
     private final TrackRepository trackRepository;
     private final RaceRepository raceRepository;
     private final MarketRepository marketRepository;
+    private final ContractRepository contractRepository;
 
     private final RaceService raceService;
     private final ShopService shopService;
@@ -33,6 +34,7 @@ public class GameService {
         this.trackRepository = new TrackRepository();
         this.raceRepository = new RaceRepository();
         this.marketRepository = new MarketRepository();
+        this.contractRepository = new ContractRepository();
 
         this.raceService = new RaceService(this);
         this.shopService = new ShopService(this);
@@ -72,7 +74,7 @@ public class GameService {
     public ManagerRepository getManagerRepository() { return managerRepository; }
     public TrackRepository getTrackRepository() { return trackRepository; }
     public RaceRepository getRaceRepository() { return raceRepository; }
-    public MarketRepository getMarketRepository() { return marketRepository; }
+    public ContractRepository getContractRepository() { return contractRepository; }
 
     public RaceService getRaceService() { return raceService; }
     public ShopService getShopService() { return shopService; }
@@ -90,7 +92,9 @@ public class GameService {
 
     public List<Car> getUsableCars() {
         return carRepository.findByManagerId(playerManager.getId()).stream()
-                .filter(car -> car.isComplete() && car.getWearPercentage() < 80 && !car.hasBrokenComponents())
+                // По методичке можно продолжать ездить при высоком износе,
+                // но сломанные компоненты требуют замены.
+                .filter(car -> car.isComplete() && !car.hasBrokenComponents())
                 .toList();
     }
 
@@ -117,6 +121,12 @@ public class GameService {
             managerRepository.findById(managerId).ifPresent(manager -> {
                 manager.addPrizeMoney(prizeMoney);
                 manager.addChampionshipPoints(points);
+
+                // Репутация растет за место (нужно для покупки спонсорских контрактов).
+                if (managerId.equals(playerManager.getId())) {
+                    manager.addReputation(getReputationDelta(position));
+                }
+
                 managerRepository.save(manager);
             });
 
@@ -132,6 +142,48 @@ public class GameService {
             if (pilotId != null) {
                 pilotRepository.findById(pilotId).ifPresent(Pilot::gainExperience);
             }
+
+            // Спонсорские контракты обновляются только для игрока.
+            if (managerId.equals(playerManager.getId())) {
+                processSponsorContractsAfterRace();
+            }
         }
+    }
+
+    private int getReputationDelta(int position) {
+        return switch (position) {
+            case 1 -> 12;
+            case 2 -> 8;
+            case 3 -> 6;
+            case 4 -> 4;
+            default -> 2;
+        };
+    }
+
+    private void processSponsorContractsAfterRace() {
+        // Принимаем, что каждый активный контракт выполняется в рамках каждой гонки.
+        for (String contractId : playerManager.getContractIds()) {
+            contractRepository.findById(contractId).ifPresent(contract -> {
+                if (contract.isCompleted()) {
+                    playerManager.removeContractId(contractId);
+                    return;
+                }
+
+                contract.addRace();
+
+                double payoutPerRace = contract.getPrice() * 1.5 / Math.max(1, contract.getNumberOfRaces());
+                playerManager.addPrizeMoney(payoutPerRace);
+
+                // Фиксируем завершение и награду за выполнение.
+                if (contract.isCompleted()) {
+                    playerManager.removeContractId(contractId);
+                    playerManager.addReputation(5);
+                }
+
+                contractRepository.save(contract);
+            });
+        }
+
+        managerRepository.save(playerManager);
     }
 }

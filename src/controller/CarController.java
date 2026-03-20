@@ -3,30 +3,30 @@ package controller;
 import model.*;
 import model.components.*;
 import service.GameService;
-import view.ConsoleView;
+import view.ConsoleIO;
 import java.util.*;
 
 public class CarController {
     private final GameService gameService;
-    private final ConsoleView view;
+    private final ConsoleIO io;
 
-    public CarController(GameService gameService, ConsoleView view) {
+    public CarController(GameService gameService, ConsoleIO io) {
         this.gameService = gameService;
-        this.view = view;
+        this.io = io;
     }
 
     public void assembleCar() {
-        view.clearScreen();
+        io.clearScreen();
         List<Car> cars = getIncompleteCars();
 
         if (cars.isEmpty()) {
-            view.showError("Нет доступных болидов для сборки!");
-            view.showMessage("Сначала купите компоненты и создайте болид.");
-            view.waitForEnter();
+            io.showError("Нет доступных болидов для сборки!");
+            io.showMessage("Сначала купите компоненты и создайте болид.");
+            io.waitForEnter();
             return;
         }
 
-        view.showMessage("\n=== СБОРКА БОЛИДА ===");
+        io.showMessage("\n=== СБОРКА БОЛИДА ===");
         Car selectedCar = selectCar(cars);
         if (selectedCar == null) return;
 
@@ -40,17 +40,18 @@ public class CarController {
 
     private List<Car> getIncompleteCars() {
         return gameService.getPlayerCars().stream()
-                .filter(c -> !c.isComplete())
+                // "Не полностью рабочие" болиды: отсутствуют компоненты или есть разрушенные детали
+                .filter(c -> !c.isComplete() || c.hasBrokenComponents())
                 .toList();
     }
 
     private Car selectCar(List<Car> cars) {
-        view.showMessage("Доступные болиды:");
+        io.showMessage("Доступные болиды:");
         for (int i = 0; i < cars.size(); i++) {
-            view.showMessage((i + 1) + ". " + cars.get(i).getName());
+            io.showMessage((i + 1) + ". " + cars.get(i).getName());
         }
 
-        int carChoice = view.getUserIntInput("\nВыберите болид: ", 1, cars.size()) - 1;
+        int carChoice = io.getUserIntInput("\nВыберите болид: ", 1, cars.size()) - 1;
         return cars.get(carChoice);
     }
 
@@ -66,14 +67,14 @@ public class CarController {
 
         if (success) {
             removeUsedComponents(assembly);
-            view.showSuccess("✅ Болид успешно собран!");
-            view.showMessage("Новая производительность: " +
+            io.showSuccess("✅ Болид успешно собран!");
+            io.showMessage("Новая производительность: " +
                     String.format("%.2f", car.calculatePerformance()));
         } else {
-            view.showError("❌ Не удалось собрать болид!");
+            io.showError("❌ Не удалось собрать болид!");
         }
 
-        view.waitForEnter();
+        io.waitForEnter();
     }
 
     private void removeUsedComponents(CarAssembly assembly) {
@@ -85,65 +86,90 @@ public class CarController {
     }
 
     public void viewCars() {
-        view.clearScreen();
+        io.clearScreen();
         List<Car> cars = gameService.getPlayerCars();
 
-        view.showMessage("\n=== ВАШИ БОЛИДЫ ===");
+        io.showMessage("\n=== ВАШИ БОЛИДЫ ===");
 
         if (cars.isEmpty()) {
-            view.showMessage("У вас пока нет болидов.");
-            view.showMessage("Купите компоненты и создайте первый болид!");
+            io.showMessage("У вас пока нет болидов.");
+            io.showMessage("Купите компоненты и создайте первый болид!");
         } else {
             displayCars(cars);
             offerRepair(cars);
         }
 
-        view.waitForEnter();
+        io.waitForEnter();
     }
 
     private void displayCars(List<Car> cars) {
         for (int i = 0; i < cars.size(); i++) {
             Car car = cars.get(i);
-            view.showMessage("\n" + (i + 1) + ". " + car.getName());
+            io.showMessage("\n" + (i + 1) + ". " + car.getName());
 
             if (car.isComplete()) {
                 displayCompleteCar(car);
             } else {
-                view.showMessage("   ❌ Статус: Не собран");
-                view.showMessage("   🔧 Требуется сборка");
+                io.showMessage("   ❌ Статус: Не собран");
+                io.showMessage("   🔧 Требуется сборка");
             }
         }
     }
 
     private void displayCompleteCar(Car car) {
-        view.showMessage("   ✅ Статус: Собран");
-        view.showMessage("   📊 Производительность: " +
+        io.showMessage("   ✅ Статус: Собран");
+        io.showMessage("   📊 Производительность: " +
                 String.format("%.2f", car.calculatePerformance()));
-        view.showMessage("   🔧 Износ: " + String.format("%.1f%%", car.getWearPercentage()));
+        io.showMessage("   🔧 Износ: " + String.format("%.1f%%", car.getWearPercentage()));
 
-        if (car.getWearPercentage() > 80) {
-            view.showWarning("   ⚠️ Высокий износ! Требуется ремонт.");
+        if (car.hasBrokenComponents()) {
+            io.showWarning("   ⚠️ Разрушенные компоненты! Ремонт невозможен — только замена.");
+            if (car.getEngine() != null && car.getEngine().isBroken()) {
+                io.showMessage("     • Двигатель: сломан");
+            }
+            if (car.getTransmission() != null && car.getTransmission().isBroken()) {
+                io.showMessage("     • Трансмиссия: сломана");
+            }
+            if (car.getSuspension() != null && car.getSuspension().isBroken()) {
+                io.showMessage("     • Подвеска: сломана");
+            }
+            if (car.getAerodynamics() != null && car.getAerodynamics().isBroken()) {
+                io.showMessage("     • Аэродинамика: сломана");
+            }
+            if (car.getTyres() != null && car.getTyres().isBroken()) {
+                io.showMessage("     • Шины: сломаны");
+            }
+            io.showMessage("   Купите нужные компоненты в разделе 2 и замените их в разделе 3.");
+        } else if (car.getWearPercentage() > 50) {
+            io.showWarning("   ⚠️ Высокий износ (>50%). Вероятность инцидента выше.");
         }
 
-        view.showMessage("\n   Компоненты:");
+        io.showMessage("\n   Компоненты:");
         if (car.getEngine() != null)
-            view.showMessage("     • Двигатель: " + car.getEngine().getName());
+            io.showMessage("     • Двигатель: " + car.getEngine().getName());
         if (car.getTransmission() != null)
-            view.showMessage("     • Трансмиссия: " + car.getTransmission().getName());
+            io.showMessage("     • Трансмиссия: " + car.getTransmission().getName());
         if (car.getSuspension() != null)
-            view.showMessage("     • Подвеска: " + car.getSuspension().getName());
+            io.showMessage("     • Подвеска: " + car.getSuspension().getName());
         if (car.getAerodynamics() != null)
-            view.showMessage("     • Аэродинамика: " + car.getAerodynamics().getName());
+            io.showMessage("     • Аэродинамика: " + car.getAerodynamics().getName());
         if (car.getTyres() != null)
-            view.showMessage("     • Шины: " + car.getTyres().getName());
+            io.showMessage("     • Шины: " + car.getTyres().getName());
     }
 
     private void offerRepair(List<Car> cars) {
         boolean needsRepair = cars.stream()
-                .anyMatch(c -> c.isComplete() && c.getWearPercentage() > 50);
+                .anyMatch(c -> c.isComplete()
+                        && !c.hasBrokenComponents()
+                        && c.getWearPercentage() > 50);
 
         if (needsRepair) {
-            boolean repair = view.getUserConfirmation("\nХотите отремонтировать болиды?");
+            if (gameService.getPlayerEngineers().isEmpty()) {
+                io.showError("Для ремонта нужен инженер. Найдите его в разделе 4.");
+                io.waitForEnter();
+                return;
+            }
+            boolean repair = io.getUserConfirmation("\nХотите отремонтировать болиды?");
             if (repair) {
                 repairCars();
             }
@@ -153,49 +179,55 @@ public class CarController {
     public void repairCars() {
         Manager player = gameService.getPlayerManager();
         List<Car> cars = gameService.getPlayerCars().stream()
-                .filter(Car::isComplete)
+                .filter(c -> c.isComplete() && !c.hasBrokenComponents())
                 .toList();
 
         if (cars.isEmpty()) {
-            view.showMessage("Нет болидов для ремонта.");
+            io.showMessage("Нет болидов для ремонта.");
             return;
         }
 
-        view.showMessage("\n=== РЕМОНТ БОЛИДОВ ===");
+        io.showMessage("\n=== РЕМОНТ БОЛИДОВ ===");
 
         for (int i = 0; i < cars.size(); i++) {
             Car car = cars.get(i);
             double repairCost = car.getWearPercentage() * 100;
-            view.showMessage(String.format("%d. %s [Износ: %.1f%%, Стоимость ремонта: $%,.0f]",
+            io.showMessage(String.format("%d. %s [Износ: %.1f%%, Стоимость ремонта: $%,.0f]",
                     i + 1, car.getName(), car.getWearPercentage(), repairCost));
         }
 
-        int choice = view.getUserIntInput("\nВыберите болид для ремонта (0 - отмена): ", 0, cars.size());
+        int choice = io.getUserIntInput("\nВыберите болид для ремонта (0 - отмена): ", 0, cars.size());
         if (choice == 0) return;
 
         processRepair(cars.get(choice - 1), player);
     }
 
     private void processRepair(Car car, Manager player) {
-        double repairCost = car.getWearPercentage() * 100;
-
-        view.showMessage("Стоимость ремонта: $" + String.format("%,.0f", repairCost));
-        view.showMessage("Ваш бюджет: $" + String.format("%,.0f", player.getBudget()));
-
-        if (repairCost > player.getBudget()) {
-            view.showError("Недостаточно средств!");
+        if (gameService.getPlayerEngineers().isEmpty()) {
+            io.showError("Для ремонта нужен инженер. Найдите его в разделе 4.");
+            io.waitForEnter();
             return;
         }
 
-        if (!view.getUserConfirmation("Подтвердить ремонт?")) return;
+        double repairCost = car.getWearPercentage() * 100;
+
+        io.showMessage("Стоимость ремонта: $" + String.format("%,.0f", repairCost));
+        io.showMessage("Ваш бюджет: $" + String.format("%,.0f", player.getBudget()));
+
+        if (repairCost > player.getBudget()) {
+            io.showError("Недостаточно средств!");
+            return;
+        }
+
+        if (!io.getUserConfirmation("Подтвердить ремонт?")) return;
 
         boolean success = gameService.getShopService().repairCar(car.getId());
 
         if (success) {
-            view.showSuccess("Болид отремонтирован!");
-            view.showMessage("Новый износ: 0%");
+            io.showSuccess("Болид отремонтирован!");
+            io.showMessage("Новый износ: 0%");
         } else {
-            view.showError("Не удалось отремонтировать болид");
+            io.showError("Не удалось отремонтировать болид");
         }
     }
 
@@ -228,34 +260,35 @@ public class CarController {
         }
 
         private boolean selectEngine() {
-            if (engine != null) return true;
+            // Если компонент уже стоит и он не разрушен — оставляем
+            if (engine != null && !engine.isBroken()) return true;
 
             List<Engine> engines = gameService.getComponentRepository().findByType(Engine.class);
             if (engines.isEmpty()) {
-                view.showError("Нет купленных двигателей!");
-                view.waitForEnter();
+                io.showError("Нет купленных двигателей. Для замены сломанного двигателя купите новый в разделе 2.");
+                io.waitForEnter();
                 return false;
             }
 
-            view.showMessage("\nДоступные двигатели (купленные):");
+            io.showMessage("\nДоступные двигатели (купленные):");
             for (int i = 0; i < engines.size(); i++) {
                 Engine eng = engines.get(i);
-                view.showMessage(String.format("%d. %s [Мощность: %.1f, Тип: %s, Цена: $%,.0f]",
+                io.showMessage(String.format("%d. %s [Мощность: %.1f, Тип: %s, Цена: $%,.0f]",
                         i + 1, eng.getName(), eng.getBasePower(), eng.getEngineType(), eng.getPrice()));
             }
 
-            int choice = view.getUserIntInput("Выберите двигатель: ", 1, engines.size()) - 1;
+            int choice = io.getUserIntInput("Выберите двигатель: ", 1, engines.size()) - 1;
             engine = engines.get(choice);
             return true;
         }
 
         private boolean selectTransmission() {
-            if (transmission != null) return true;
+            if (transmission != null && !transmission.isBroken()) return true;
 
             List<Transmission> transmissions = gameService.getComponentRepository().findByType(Transmission.class);
             if (transmissions.isEmpty()) {
-                view.showError("Нет купленных трансмиссий!");
-                view.waitForEnter();
+                io.showError("Нет купленных трансмиссий. Купите новую трансмиссию в разделе 2 для замены сломанной.");
+                io.waitForEnter();
                 return false;
             }
 
@@ -264,30 +297,30 @@ public class CarController {
                     .toList();
 
             if (compatible.isEmpty()) {
-                view.showError("Нет купленных совместимых трансмиссий!");
-                view.waitForEnter();
+                io.showError("Нет купленных совместимых трансмиссий для выбранного двигателя. Купите подходящую в разделе 2.");
+                io.waitForEnter();
                 return false;
             }
 
-            view.showMessage("\nДоступные трансмиссии (совместимые):");
+            io.showMessage("\nДоступные трансмиссии (совместимые):");
             for (int i = 0; i < compatible.size(); i++) {
                 Transmission trans = compatible.get(i);
-                view.showMessage(String.format("%d. %s [Эффективность: %.2f, Цена: $%,.0f]",
+                io.showMessage(String.format("%d. %s [Эффективность: %.2f, Цена: $%,.0f]",
                         i + 1, trans.getName(), trans.getBaseEfficiency(), trans.getPrice()));
             }
 
-            int choice = view.getUserIntInput("Выберите трансмиссию: ", 1, compatible.size()) - 1;
+            int choice = io.getUserIntInput("Выберите трансмиссию: ", 1, compatible.size()) - 1;
             transmission = compatible.get(choice);
             return true;
         }
 
         private boolean selectSuspension() {
-            if (suspension != null) return true;
+            if (suspension != null && !suspension.isBroken()) return true;
 
             List<Suspension> suspensions = gameService.getComponentRepository().findByType(Suspension.class);
             if (suspensions.isEmpty()) {
-                view.showError("Нет купленных подвесок!");
-                view.waitForEnter();
+                io.showError("Нет купленных подвесок. Купите новую подвеску в разделе 2 для замены сломанной.");
+                io.waitForEnter();
                 return false;
             }
 
@@ -296,74 +329,74 @@ public class CarController {
                     .toList();
 
             if (compatible.isEmpty()) {
-                view.showError("Нет купленных подвесок, которые выдержат вес двигателя!");
-                view.waitForEnter();
+                io.showError("Нет купленных совместимых подвесок, которые выдержат вес выбранного двигателя. Купите подходящую в разделе 2.");
+                io.waitForEnter();
                 return false;
             }
 
-            view.showMessage("\nДоступные подвески (совместимые):");
+            io.showMessage("\nДоступные подвески (совместимые):");
             for (int i = 0; i < compatible.size(); i++) {
                 Suspension susp = compatible.get(i);
-                view.showMessage(String.format("%d. %s [Стабильность: %.1f, Макс.вес: %d кг, Цена: $%,.0f]",
+                io.showMessage(String.format("%d. %s [Стабильность: %.1f, Макс.вес: %d кг, Цена: $%,.0f]",
                         i + 1, susp.getName(), susp.getBaseStability(), susp.getMaxWeight(), susp.getPrice()));
             }
 
-            int choice = view.getUserIntInput("Выберите подвеску: ", 1, compatible.size()) - 1;
+            int choice = io.getUserIntInput("Выберите подвеску: ", 1, compatible.size()) - 1;
             suspension = compatible.get(choice);
             return true;
         }
 
         private boolean selectAerodynamics() {
-            if (aerodynamics != null) return true;
+            if (aerodynamics != null && !aerodynamics.isBroken()) return true;
 
             List<Aerodynamics> aeroList = gameService.getComponentRepository().findByType(Aerodynamics.class);
             if (aeroList.isEmpty()) {
-                view.showError("Нет купленных аэродинамических пакетов!");
-                view.waitForEnter();
+                io.showError("Нет купленных аэродинамических пакетов. Купите новый в разделе 2 для замены сломанного.");
+                io.waitForEnter();
                 return false;
             }
 
-            view.showMessage("\nДоступная аэродинамика (купленная):");
+            io.showMessage("\nДоступная аэродинамика (купленная):");
             for (int i = 0; i < aeroList.size(); i++) {
                 Aerodynamics aero = aeroList.get(i);
-                view.showMessage(String.format("%d. %s [Прижимная сила: %.1f, Цена: $%,.0f]",
+                io.showMessage(String.format("%d. %s [Прижимная сила: %.1f, Цена: $%,.0f]",
                         i + 1, aero.getName(), aero.getBaseDownforce(), aero.getPrice()));
             }
 
-            int choice = view.getUserIntInput("Выберите аэродинамику: ", 1, aeroList.size()) - 1;
+            int choice = io.getUserIntInput("Выберите аэродинамику: ", 1, aeroList.size()) - 1;
             aerodynamics = aeroList.get(choice);
             return true;
         }
 
         private boolean selectTyres() {
-            if (tyres != null) return true;
+            if (tyres != null && !tyres.isBroken()) return true;
 
             List<Tyres> tyresList = gameService.getComponentRepository().findByType(Tyres.class);
             if (tyresList.isEmpty()) {
-                view.showError("Нет купленных шин!");
-                view.waitForEnter();
+                io.showError("Нет купленных шин. Купите новый комплект в разделе 2 для замены сломанного.");
+                io.waitForEnter();
                 return false;
             }
 
-            view.showMessage("\nДоступные шины (купленные):");
+            io.showMessage("\nДоступные шины (купленные):");
             for (int i = 0; i < tyresList.size(); i++) {
                 Tyres t = tyresList.get(i);
-                view.showMessage(String.format("%d. %s [Сцепление: %.1f, Состав: %s, Цена: $%,.0f]",
+                io.showMessage(String.format("%d. %s [Сцепление: %.1f, Состав: %s, Цена: $%,.0f]",
                         i + 1, t.getName(), t.getBaseGrip(), t.getCompound(), t.getPrice()));
             }
 
-            int choice = view.getUserIntInput("Выберите шины: ", 1, tyresList.size()) - 1;
+            int choice = io.getUserIntInput("Выберите шины: ", 1, tyresList.size()) - 1;
             tyres = tyresList.get(choice);
             return true;
         }
 
         boolean confirmAndAssemble() {
-            view.showMessage("\n📋 Итоговая конфигурация:");
-            view.showMessage("  Двигатель: " + engine.getName());
-            view.showMessage("  Трансмиссия: " + transmission.getName());
-            view.showMessage("  Подвеска: " + suspension.getName());
-            view.showMessage("  Аэродинамика: " + aerodynamics.getName());
-            view.showMessage("  Шины: " + tyres.getName());
+            io.showMessage("\n📋 Итоговая конфигурация:");
+            io.showMessage("  Двигатель: " + engine.getName());
+            io.showMessage("  Трансмиссия: " + transmission.getName());
+            io.showMessage("  Подвеска: " + suspension.getName());
+            io.showMessage("  Аэродинамика: " + aerodynamics.getName());
+            io.showMessage("  Шины: " + tyres.getName());
 
             double estimatedPerf = engine.getBasePower() * 0.3 +
                     transmission.getBaseEfficiency() * 0.2 +
@@ -371,9 +404,9 @@ public class CarController {
                     aerodynamics.getBaseDownforce() * 0.2 +
                     tyres.getBaseGrip() * 0.1;
 
-            view.showMessage("  Примерная производительность: " + String.format("%.2f", estimatedPerf));
+            io.showMessage("  Примерная производительность: " + String.format("%.2f", estimatedPerf));
 
-            return view.getUserConfirmation("\nПодтвердить сборку?");
+            return io.getUserConfirmation("\nПодтвердить сборку?");
         }
     }
 }

@@ -6,20 +6,21 @@ import model.staff.*;
 import model.market.*;
 import service.GameService;
 import service.MarketService;
-import view.ConsoleView;
+import repository.ContractRepository;
+import view.ConsoleIO;
 import java.util.*;
 
 public class ShopController {
     private final GameService gameService;
-    private final ConsoleView view;
+    private final ConsoleIO io;
 
-    public ShopController(GameService gameService, ConsoleView view) {
+    public ShopController(GameService gameService, ConsoleIO io) {
         this.gameService = gameService;
-        this.view = view;
+        this.io = io;
     }
 
     public void buyComponents() {
-        view.clearScreen();
+        io.clearScreen();
         Manager player = gameService.getPlayerManager();
         MarketService market = gameService.getMarketService();
 
@@ -31,7 +32,7 @@ public class ShopController {
 
             List<? extends MarketItem<?>> items = getItemsByType(typeChoice, market);
             if (items.isEmpty()) {
-                view.showMessage("Нет доступных компонентов этого типа.");
+                io.showMessage("Нет доступных компонентов этого типа.");
                 continue;
             }
 
@@ -41,18 +42,18 @@ public class ShopController {
     }
 
     private void showBudget(Manager player) {
-        view.showMessage("\n=== ПОКУПКА КОМПОНЕНТОВ ===");
-        view.showMessage("Ваш бюджет: $" + String.format("%,.0f", player.getBudget()));
+        io.showMessage("\n=== ПОКУПКА КОМПОНЕНТОВ ===");
+        io.showMessage("Ваш бюджет: $" + String.format("%,.0f", player.getBudget()));
     }
 
     private int showComponentMenu() {
-        view.showMessage("\n1. Двигатели");
-        view.showMessage("2. Трансмиссии");
-        view.showMessage("3. Подвески");
-        view.showMessage("4. Аэродинамика");
-        view.showMessage("5. Шины");
-        view.showMessage("6. Назад в главное меню");
-        return view.getUserIntInput("\nВыберите тип компонента: ", 1, 6);
+        io.showMessage("\n1. Двигатели");
+        io.showMessage("2. Трансмиссии");
+        io.showMessage("3. Подвески");
+        io.showMessage("4. Аэродинамика");
+        io.showMessage("5. Шины");
+        io.showMessage("6. Назад в главное меню");
+        return io.getUserIntInput("\nВыберите тип компонента: ", 1, 6);
     }
 
     private List<? extends MarketItem<?>> getItemsByType(int type, MarketService market) {
@@ -69,7 +70,7 @@ public class ShopController {
     private void processComponentPurchase(List<? extends MarketItem<?>> items, Manager player, MarketService market) {
         displayItems(items);
 
-        int compChoice = view.getUserIntInput("\nВыберите компонент (0 - назад): ", 0, items.size());
+        int compChoice = io.getUserIntInput("\nВыберите компонент (0 - назад): ", 0, items.size());
         if (compChoice == 0) return;
 
         MarketItem<?> selected = items.get(compChoice - 1);
@@ -85,34 +86,34 @@ public class ShopController {
     }
 
     private void displayItems(List<? extends MarketItem<?>> items) {
-        view.showMessage("\nДоступные компоненты:");
+        io.showMessage("\nДоступные компоненты:");
         for (int i = 0; i < items.size(); i++) {
             MarketItem<?> item = items.get(i);
             Component comp = (Component) item.getItem();
-            view.showMessage(String.format("%d. %s [Цена: $%,.0f, Хар-ка: %.1f]",
+            io.showMessage(String.format("%d. %s [Цена: $%,.0f, Хар-ка: %.1f]",
                     i + 1, comp.getName(), item.getPrice(), comp.getBasePerformance()));
         }
     }
 
     private void showItemDetails(Component comp) {
-        view.showMessage("\n📦 Информация о товаре:");
-        view.showMessage("  Название: " + comp.getName());
-        view.showMessage("  Цена: $" + String.format("%,.0f", comp.getPrice()));
-        view.showMessage("  Характеристика: " + String.format("%.1f", comp.getBasePerformance()));
+        io.showMessage("\n📦 Информация о товаре:");
+        io.showMessage("  Название: " + comp.getName());
+        io.showMessage("  Цена: $" + String.format("%,.0f", comp.getPrice()));
+        io.showMessage("  Характеристика: " + String.format("%.1f", comp.getBasePerformance()));
 
         if (comp instanceof Engine eng) {
-            view.showMessage("  Тип: " + eng.getEngineType());
-            view.showMessage("  Вес: " + eng.getWeight() + " кг");
+            io.showMessage("  Тип: " + eng.getEngineType());
+            io.showMessage("  Вес: " + eng.getWeight() + " кг");
         } else if (comp instanceof Transmission trans) {
-            view.showMessage("  Совместимость: " + trans.getCompatibleEngineType());
+            io.showMessage("  Совместимость: " + trans.getCompatibleEngineType());
         } else if (comp instanceof Suspension susp) {
-            view.showMessage("  Макс. вес: " + susp.getMaxWeight() + " кг");
+            io.showMessage("  Макс. вес: " + susp.getMaxWeight() + " кг");
         }
     }
 
     private boolean checkBudget(Manager player, double price) {
         if (price > player.getBudget()) {
-            view.showError("Недостаточно средств! Нужно еще $" +
+            io.showError("Недостаточно средств! Нужно еще $" +
                     String.format("%,.0f", price - player.getBudget()));
             return false;
         }
@@ -120,7 +121,7 @@ public class ShopController {
     }
 
     private boolean confirmPurchase() {
-        return view.getUserConfirmation("\nПодтвердить покупку?");
+        return io.getUserConfirmation("\nПодтвердить покупку?");
     }
 
     private void executeComponentPurchase(Component comp, MarketItem<?> item, Manager player, MarketService market) {
@@ -128,21 +129,21 @@ public class ShopController {
 
         if (success) {
             market.buyItem(item.getId());
-            view.showSuccess("Компонент куплен!");
-            view.showMessage("Остаток бюджета: $" + String.format("%,.0f", player.getBudget()));
+            io.showSuccess("Компонент куплен!");
+            io.showMessage("Остаток бюджета: $" + String.format("%,.0f", player.getBudget()));
 
             offerCreateCar(comp);
         } else {
-            view.showError("Не удалось купить компонент");
+            io.showError("Не удалось купить компонент");
         }
 
-        view.waitForEnter();
+        io.waitForEnter();
     }
 
     private void offerCreateCar(Component comp) {
-        boolean createCar = view.getUserConfirmation("\nХотите создать новый болид с этим компонентом?");
+        boolean createCar = io.getUserConfirmation("\nХотите создать новый болид с этим компонентом?");
         if (createCar) {
-            String carName = view.getUserStringInput("Введите название болида: ");
+            String carName = io.getUserStringInput("Введите название болида: ");
             Car newCar = gameService.getShopService().createCar(carName);
 
             if (comp instanceof Engine) newCar.setEngine((Engine) comp);
@@ -152,40 +153,40 @@ public class ShopController {
             else if (comp instanceof Tyres) newCar.setTyres((Tyres) comp);
 
             gameService.getCarRepository().save(newCar);
-            view.showSuccess("Создан новый болид: " + newCar.getName());
+            io.showSuccess("Создан новый болид: " + newCar.getName());
         }
     }
 
     public void hireEngineer() {
-        view.clearScreen();
+        io.clearScreen();
         Manager player = gameService.getPlayerManager();
         MarketService market = gameService.getMarketService();
 
-        view.showMessage("\n=== НАЕМ ИНЖЕНЕРА ===");
-        view.showMessage("Ваш бюджет: $" + String.format("%,.0f", player.getBudget()));
+        io.showMessage("\n=== НАЕМ ИНЖЕНЕРА ===");
+        io.showMessage("Ваш бюджет: $" + String.format("%,.0f", player.getBudget()));
 
         List<MarketItem<Engineer>> engineers = market.getAvailableEngineers();
 
         if (engineers.isEmpty()) {
-            view.showMessage("Нет доступных инженеров для найма.");
-            view.waitForEnter();
+            io.showMessage("Нет доступных инженеров для найма.");
+            io.waitForEnter();
             return;
         }
 
         displayEngineers(engineers);
 
-        int choice = view.getUserIntInput("\nВыберите инженера (0 - отмена): ", 0, engineers.size());
+        int choice = io.getUserIntInput("\nВыберите инженера (0 - отмена): ", 0, engineers.size());
         if (choice == 0) return;
 
         processEngineerHire(engineers.get(choice - 1), player, market);
     }
 
     private void displayEngineers(List<MarketItem<Engineer>> engineers) {
-        view.showMessage("\nДоступные инженеры:");
+        io.showMessage("\nДоступные инженеры:");
         for (int i = 0; i < engineers.size(); i++) {
             Engineer eng = engineers.get(i).getItem();
             double yearlySalary = eng.getSalary() * 12;
-            view.showMessage(String.format("%d. %s [Спец: %s, Ур.%d, З/п: $%,.0f/год, Эфф: %.0f%%]",
+            io.showMessage(String.format("%d. %s [Спец: %s, Ур.%d, З/п: $%,.0f/год, Эфф: %.0f%%]",
                     i + 1, eng.getName(), eng.getSpecialization(), eng.getLevel(),
                     yearlySalary, eng.getEfficiency() * 100));
         }
@@ -198,7 +199,7 @@ public class ShopController {
         showEngineerDetails(engineer, yearlySalary);
 
         if (!checkBudget(player, yearlySalary)) {
-            view.waitForEnter();
+            io.waitForEnter();
             return;
         }
 
@@ -208,16 +209,16 @@ public class ShopController {
     }
 
     private void showEngineerDetails(Engineer engineer, double yearlySalary) {
-        view.showMessage("\n📋 Информация о кандидате:");
-        view.showMessage("  Имя: " + engineer.getName());
-        view.showMessage("  Специализация: " + engineer.getSpecialization());
-        view.showMessage("  Уровень: " + engineer.getLevel());
-        view.showMessage("  Годовая зарплата: $" + String.format("%,.0f", yearlySalary));
-        view.showMessage("  Эффективность: " + (engineer.getEfficiency() * 100) + "%");
+        io.showMessage("\n📋 Информация о кандидате:");
+        io.showMessage("  Имя: " + engineer.getName());
+        io.showMessage("  Специализация: " + engineer.getSpecialization());
+        io.showMessage("  Уровень: " + engineer.getLevel());
+        io.showMessage("  Годовая зарплата: $" + String.format("%,.0f", yearlySalary));
+        io.showMessage("  Эффективность: " + (engineer.getEfficiency() * 100) + "%");
     }
 
     private boolean confirmHire() {
-        return view.getUserConfirmation("\nПодтвердить найм?");
+        return io.getUserConfirmation("\nПодтвердить найм?");
     }
 
     private void executeEngineerHire(Engineer engineer, MarketItem<Engineer> item, Manager player, MarketService market) {
@@ -225,45 +226,45 @@ public class ShopController {
 
         if (success) {
             market.buyItem(item.getId());
-            view.showSuccess("Инженер нанят!");
-            view.showMessage("Остаток бюджета: $" + String.format("%,.0f", player.getBudget()));
-            view.showMessage("Теперь в команде " + gameService.getPlayerEngineers().size() + " инженеров.");
+            io.showSuccess("Инженер нанят!");
+            io.showMessage("Остаток бюджета: $" + String.format("%,.0f", player.getBudget()));
+            io.showMessage("Теперь в команде " + gameService.getPlayerEngineers().size() + " инженеров.");
         } else {
-            view.showError("Не удалось нанять инженера");
+            io.showError("Не удалось нанять инженера");
         }
 
-        view.waitForEnter();
+        io.waitForEnter();
     }
 
     public void hirePilot() {
-        view.clearScreen();
+        io.clearScreen();
         Manager player = gameService.getPlayerManager();
         MarketService market = gameService.getMarketService();
 
-        view.showMessage("\n=== НАЕМ ПИЛОТА ===");
-        view.showMessage("Ваш бюджет: $" + String.format("%,.0f", player.getBudget()));
+        io.showMessage("\n=== НАЕМ ПИЛОТА ===");
+        io.showMessage("Ваш бюджет: $" + String.format("%,.0f", player.getBudget()));
 
         List<MarketItem<Pilot>> pilots = market.getAvailablePilots();
 
         if (pilots.isEmpty()) {
-            view.showMessage("Нет доступных пилотов для найма.");
-            view.waitForEnter();
+            io.showMessage("Нет доступных пилотов для найма.");
+            io.waitForEnter();
             return;
         }
 
         displayPilots(pilots);
 
-        int choice = view.getUserIntInput("\nВыберите пилота (0 - отмена): ", 0, pilots.size());
+        int choice = io.getUserIntInput("\nВыберите пилота (0 - отмена): ", 0, pilots.size());
         if (choice == 0) return;
 
         processPilotHire(pilots.get(choice - 1), player, market);
     }
 
     private void displayPilots(List<MarketItem<Pilot>> pilots) {
-        view.showMessage("\nДоступные пилоты:");
+        io.showMessage("\nДоступные пилоты:");
         for (int i = 0; i < pilots.size(); i++) {
             Pilot pilot = pilots.get(i).getItem();
-            view.showMessage(String.format("%d. %s [Возраст: %d, Навык: %.1f, Цена: $%,.0f]",
+            io.showMessage(String.format("%d. %s [Возраст: %d, Навык: %.1f, Цена: $%,.0f]",
                     i + 1, pilot.getName(), pilot.getAge(), pilot.getSkill(), pilot.getPrice()));
         }
     }
@@ -274,7 +275,7 @@ public class ShopController {
         showPilotDetails(pilot);
 
         if (!checkBudget(player, pilot.getPrice())) {
-            view.waitForEnter();
+            io.waitForEnter();
             return;
         }
 
@@ -284,13 +285,13 @@ public class ShopController {
     }
 
     private void showPilotDetails(Pilot pilot) {
-        view.showMessage("\n📋 Информация о пилоте:");
-        view.showMessage("  Имя: " + pilot.getName());
-        view.showMessage("  Возраст: " + pilot.getAge());
-        view.showMessage("  Навык: " + pilot.getSkill());
-        view.showMessage("  Цена контракта: $" + String.format("%,.0f", pilot.getPrice()));
-        view.showMessage("  Агрессивность: " + (pilot.getAggression() * 100) + "%");
-        view.showMessage("  Стабильность: " + (pilot.getConsistency() * 100) + "%");
+        io.showMessage("\n📋 Информация о пилоте:");
+        io.showMessage("  Имя: " + pilot.getName());
+        io.showMessage("  Возраст: " + pilot.getAge());
+        io.showMessage("  Навык: " + pilot.getSkill());
+        io.showMessage("  Цена контракта: $" + String.format("%,.0f", pilot.getPrice()));
+        io.showMessage("  Агрессивность: " + (pilot.getAggression() * 100) + "%");
+        io.showMessage("  Стабильность: " + (pilot.getConsistency() * 100) + "%");
     }
 
     private void executePilotHire(Pilot pilot, MarketItem<Pilot> item, Manager player, MarketService market) {
@@ -298,13 +299,87 @@ public class ShopController {
 
         if (success) {
             market.buyItem(item.getId());
-            view.showSuccess("Пилот нанят!");
-            view.showMessage("Остаток бюджета: $" + String.format("%,.0f", player.getBudget()));
-            view.showMessage("Теперь в команде " + gameService.getPlayerPilots().size() + " пилотов.");
+            io.showSuccess("Пилот нанят!");
+            io.showMessage("Остаток бюджета: $" + String.format("%,.0f", player.getBudget()));
+            io.showMessage("Теперь в команде " + gameService.getPlayerPilots().size() + " пилотов.");
         } else {
-            view.showError("Не удалось нанять пилота");
+            io.showError("Не удалось нанять пилота");
         }
 
-        view.waitForEnter();
+        io.waitForEnter();
+    }
+
+    public void manageSponsorContracts() {
+        io.clearScreen();
+        Manager player = gameService.getPlayerManager();
+        MarketService market = gameService.getMarketService();
+        ContractRepository contractRepository = gameService.getContractRepository();
+
+        while (true) {
+            io.showMessage("\n=== КОНТРАКТЫ СО СПОНСОРАМИ ===");
+            io.showMessage("Ваш бюджет: $" + String.format("%,.0f", player.getBudget()));
+            io.showMessage("Репутация: " + player.getReputation());
+
+            showActiveContracts(contractRepository, player);
+
+            List<MarketItem<Contract>> available = market.getAvailableContracts();
+            List<MarketItem<Contract>> signable = available.stream()
+                    .filter(item -> player.getReputation() >= item.getItem().getMinReputation())
+                    .toList();
+
+            if (signable.isEmpty()) {
+                io.showMessage("\nНет доступных контрактов (или репутация слишком низкая).");
+                io.showMessage("Нажмите Enter, чтобы вернуться в меню.");
+                io.waitForEnter();
+                return;
+            }
+
+            io.showMessage("\nДоступные для подписания контракты:");
+            for (int i = 0; i < signable.size(); i++) {
+                Contract c = signable.get(i).getItem();
+                int remaining = Math.max(0, c.getNumberOfRaces() - c.getRacesCompleted());
+                io.showMessage(String.format("%d. %s [Цена: $%,.0f, Гонки: %d, Мин. реп.: %d, Осталось: %d]",
+                        i + 1, c.getName(), c.getPrice(), c.getNumberOfRaces(), c.getMinReputation(), remaining));
+            }
+
+            int choice = io.getUserIntInput("\nВыберите контракт для подписания (0 - назад): ", 0, signable.size());
+            if (choice == 0) return;
+
+            Contract selected = signable.get(choice - 1).getItem();
+            io.showMessage("\nВы выбрали: " + selected.getName());
+            io.showMessage("Стоимость: $" + String.format("%,.0f", selected.getPrice()));
+            io.showMessage("Выполнение: " + selected.getNumberOfRaces() + " гонок");
+            io.showMessage("Минимальная репутация: " + selected.getMinReputation());
+
+            if (!io.getUserConfirmation("\nПодписать контракт?")) {
+                io.waitForEnter();
+                continue;
+            }
+
+            boolean success = gameService.getShopService().signContract(selected);
+            if (success) {
+                io.showSuccess("Контракт подписан!");
+            } else {
+                io.showError("Не удалось подписать контракт (возможно, недостаточно бюджета/репутации).");
+            }
+
+            io.waitForEnter();
+        }
+    }
+
+    private void showActiveContracts(ContractRepository contractRepository, Manager player) {
+        List<Contract> active = contractRepository.findAllById(player.getContractIds());
+
+        io.showMessage("\nАктивные контракты:");
+        if (active.isEmpty()) {
+            io.showMessage("   (нет)");
+            return;
+        }
+
+        for (int i = 0; i < active.size(); i++) {
+            Contract c = active.get(i);
+            int remaining = Math.max(0, c.getNumberOfRaces() - c.getRacesCompleted());
+            io.showMessage(String.format("   %d) %s [Осталось: %d/%d гонок]", i + 1, c.getName(), remaining, c.getNumberOfRaces()));
+        }
     }
 }

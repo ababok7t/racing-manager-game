@@ -1,11 +1,16 @@
 package controller;
 
 import service.GameService;
-import view.ConsoleView;
+import view.ConsoleIO;
+import view.MainMenuView;
+import view.RaceView;
 
 public class GameController {
     private final GameService gameService;
-    private final ConsoleView view;
+    private final ConsoleIO io;
+    private final MainMenuView mainMenuView;
+    private final RaceView raceView;
+
     private final RaceController raceController;
     private final ShopController shopController;
     private final CarController carController;
@@ -14,20 +19,23 @@ public class GameController {
 
     public GameController() {
         this.gameService = new GameService();
-        this.view = new ConsoleView();
-        this.raceController = new RaceController(gameService, view);
-        this.shopController = new ShopController(gameService, view);
-        this.carController = new CarController(gameService, view);
-        this.infoController = new InfoController(gameService, view);
+        this.io = new ConsoleIO();
+        this.mainMenuView = new MainMenuView(io);
+        this.raceView = new RaceView(io);
+
+        this.raceController = new RaceController(gameService, io, raceView);
+        this.shopController = new ShopController(gameService, io);
+        this.carController = new CarController(gameService, io);
+        this.infoController = new InfoController(gameService, io);
         this.isRunning = true;
     }
 
     public void start() {
-        view.showWelcomeMessage();
+        mainMenuView.showWelcomeMessage();
 
         while (isRunning) {
-            view.showMainMenu();
-            int choice = view.getUserIntInput("Выберите пункт меню: ", 1, 11);
+            mainMenuView.showMainMenu();
+            int choice = io.getUserIntInput("Выберите пункт меню: ", 1, 12);
 
             switch (choice) {
                 case 1 -> raceController.startRace();
@@ -40,14 +48,15 @@ public class GameController {
                 case 8 -> infoController.viewRaceStatistics();
                 case 9 -> infoController.viewOtherTeams();
                 case 10 -> infoController.viewRecentResults();
-                case 11 -> exit();
-                default -> view.showError("Неверный выбор!");
+                case 11 -> shopController.manageSponsorContracts();
+                case 12 -> exit();
+                default -> io.showError("Неверный выбор!");
             }
         }
     }
 
     private void exit() {
-        view.showMessage("\nСпасибо за игру! До свидания!");
+        io.showMessage("\nСпасибо за игру! До свидания!");
         isRunning = false;
     }
 }

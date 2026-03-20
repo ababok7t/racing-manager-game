@@ -1,5 +1,6 @@
 package model.market;
 
+import model.Contract;
 import model.components.Component;
 import model.staff.Pilot;
 import model.staff.Engineer;
@@ -12,7 +13,7 @@ public class MarketItem<T> {
     private boolean isAvailable;
 
     public enum ItemType {
-        COMPONENT, PILOT, ENGINEER
+        COMPONENT, PILOT, ENGINEER, CONTRACT
     }
 
     public MarketItem(T item, double price, ItemType type) {
@@ -26,6 +27,7 @@ public class MarketItem<T> {
         if (item instanceof Component) return ((Component) item).getId();
         if (item instanceof Pilot) return ((Pilot) item).getId();
         if (item instanceof Engineer) return ((Engineer) item).getId();
+        if (item instanceof Contract) return ((Contract) item).getId();
         return null;
     }
 
@@ -39,6 +41,7 @@ public class MarketItem<T> {
         if (item instanceof Component) return ((Component) item).getName();
         if (item instanceof Pilot) return ((Pilot) item).getName();
         if (item instanceof Engineer) return ((Engineer) item).getName();
+        if (item instanceof Contract) return ((Contract) item).getName();
         return "Unknown";
     }
 
@@ -48,6 +51,7 @@ public class MarketItem<T> {
             case COMPONENT -> "Компонент";
             case PILOT -> "Пилот";
             case ENGINEER -> "Инженер";
+            case CONTRACT -> "Контракт";
         };
         return String.format("%s: %s [Цена: %.0f]", typeStr, getName(), price);
     }

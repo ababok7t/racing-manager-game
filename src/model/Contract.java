@@ -1,6 +1,9 @@
 package model;
 
+import java.util.UUID;
+
 public class Contract {
+    private final String id;
     private final String name;
     private final double price;
     private int numberOfRaces;
@@ -8,11 +11,16 @@ public class Contract {
     private int racesCompleted;
 
     public Contract(String name, double price, int racesAmount, int minReputation) {
+        this.id = UUID.randomUUID().toString();
         this.name = name;
         this.price = price;
         this.numberOfRaces = racesAmount;
         this.minReputation = minReputation;
         this.racesCompleted = 0;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getName() {
@@ -37,5 +45,9 @@ public class Contract {
 
     public void addRace() {
         this.racesCompleted = racesCompleted + 1;
+    }
+
+    public boolean isCompleted() {
+        return racesCompleted >= numberOfRaces;
     }
 }

@@ -4,21 +4,24 @@ import model.*;
 import model.race.*;
 import model.staff.*;
 import service.GameService;
-import view.ConsoleView;
+import view.ConsoleIO;
+import view.RaceView;
 import java.util.*;
 
 public class RaceController {
     private final GameService gameService;
-    private final ConsoleView view;
+    private final ConsoleIO io;
+    private final RaceView raceView;
 
-    public RaceController(GameService gameService, ConsoleView view) {
+    public RaceController(GameService gameService, ConsoleIO io, RaceView raceView) {
         this.gameService = gameService;
-        this.view = view;
+        this.io = io;
+        this.raceView = raceView;
     }
 
     public void startRace() {
-        view.clearScreen();
-        view.showMessage("\n🏁 ПОДГОТОВКА К ГОНКЕ 🏁");
+        io.clearScreen();
+        io.showMessage("\n🏁 ПОДГОТОВКА К ГОНКЕ 🏁");
 
         if (!gameService.canParticipate()) {
             showCantParticipateMessage();
@@ -30,6 +33,17 @@ public class RaceController {
 
         Car selectedCar = selectCar();
         if (selectedCar == null) return;
+        if (selectedCar.getWearPercentage() > 50) {
+            io.showWarning("⚠️ Высокий износ болида (>50%). Возможны инциденты.");
+            boolean proceed = io.getUserConfirmation("Продолжить гонку?");
+            if (!proceed) {
+                io.showMessage("Гонка отменена.");
+                io.showMessage("Рекомендуется: 1) раздел 3 — «Собрать болид» (замена),");
+                io.showMessage("или 2) раздел 6 — «Просмотреть болиды» (ремонт при отсутствии разрушенных компонентов).");
+                io.waitForEnter();
+                return;
+            }
+        }
 
         Pilot selectedPilot = selectPilot();
         if (selectedPilot == null) return;
@@ -41,43 +55,43 @@ public class RaceController {
     }
 
     private void showCantParticipateMessage() {
-        view.showError("Невозможно начать гонку! Необходимо:");
-        view.showMessage("  • Собранный болид (износ менее 80%)");
-        view.showMessage("  • Пилот в команде");
-        view.showMessage("  • Инженер в команде");
-        view.waitForEnter();
+        io.showError("Невозможно начать гонку! Необходимо:");
+        io.showMessage("  • Собранный болид без разрушенных компонентов");
+        io.showMessage("  • Пилот в команде");
+        io.showMessage("  • Инженер в команде");
+        io.waitForEnter();
     }
 
     private Track selectTrack() {
         List<Track> tracks = gameService.getAllTracks();
-        view.showTracks(tracks);
-        int trackChoice = view.getUserIntInput("Выберите трассу: ", 1, tracks.size()) - 1;
+        raceView.showTracks(tracks);
+        int trackChoice = io.getUserIntInput("Выберите трассу: ", 1, tracks.size()) - 1;
         return tracks.get(trackChoice);
     }
 
     private Car selectCar() {
         List<Car> cars = gameService.getUsableCars();
         if (cars.isEmpty()) {
-            view.showError("Нет готовых к гонке болидов!");
-            view.waitForEnter();
+            io.showError("Нет готовых к гонке болидов!");
+            io.waitForEnter();
             return null;
         }
 
-        view.showCars(cars);
-        int carChoice = view.getUserIntInput("Выберите болид: ", 1, cars.size()) - 1;
+        raceView.showCars(cars);
+        int carChoice = io.getUserIntInput("Выберите болид: ", 1, cars.size()) - 1;
         return cars.get(carChoice);
     }
 
     private Pilot selectPilot() {
         List<Pilot> pilots = gameService.getPlayerPilots();
         if (pilots.isEmpty()) {
-            view.showError("Нет пилотов в команде!");
-            view.waitForEnter();
+            io.showError("Нет пилотов в команде!");
+            io.waitForEnter();
             return null;
         }
 
-        view.showPilots(pilots);
-        int pilotChoice = view.getUserIntInput("Выберите пилота: ", 1, pilots.size()) - 1;
+        raceView.showPilots(pilots);
+        int pilotChoice = io.getUserIntInput("Выберите пилота: ", 1, pilots.size()) - 1;
         return pilots.get(pilotChoice);
     }
 
@@ -89,10 +103,10 @@ public class RaceController {
 
         showRaceInfo(race, car, pilot, opponentsAdded);
 
-        boolean confirm = view.getUserConfirmation("\nНачать гонку?");
+        boolean confirm = io.getUserConfirmation("\nНачать гонку?");
         if (!confirm) {
-            view.showMessage("Гонка отменена.");
-            view.waitForEnter();
+            io.showMessage("Гонка отменена.");
+            io.waitForEnter();
             return null;
         }
 
@@ -114,24 +128,44 @@ public class RaceController {
 
     private void showRaceInfo(Race race, Car car, Pilot pilot, int opponentsAdded) {
         Track track = race.getTrack();
-        view.showMessage("\n📋 Информация о гонке:");
-        view.showMessage("  Трасса: " + track.getName() + " (" + track.getCountry() + ")");
-        view.showMessage("  Круги: " + track.getLaps());
-        view.showMessage("  Погода: " + race.getWeather());
-        view.showMessage("  Участников: " + (opponentsAdded + 1) + " (вы + " + opponentsAdded + " соперников)");
-        view.showMessage("  Ваш болид: " + car.getName());
-        view.showMessage("  Ваш пилот: " + pilot.getName());
+        io.showMessage("\n📋 Информация о гонке:");
+        io.showMessage("  Трасса: " + track.getName() + " (" + track.getCountry() + ")");
+        io.showMessage("  Круги: " + track.getLaps());
+        io.showMessage("  Погода: " + race.getWeather());
+        io.showMessage("  Участников: " + (opponentsAdded + 1) + " (вы + " + opponentsAdded + " соперников)");
+        io.showMessage("  Ваш болид: " + car.getName());
+        io.showMessage("  Ваш пилот: " + pilot.getName());
     }
 
     private void simulateAndShowResults(Race race) {
-        view.showMessage("\n🏁 ГОНКА НАЧИНАЕТСЯ! 🏁\n");
+        io.showMessage("\n🏁 ГОНКА НАЧИНАЕТСЯ! 🏁\n");
         gameService.getRaceService().simulateRace(race);
-        view.showRaceResults(race);
+        Map<String, String> teamNames = new HashMap<>();
+        Map<String, String> pilotNamesByManagerId = new HashMap<>();
+
+        for (String managerId : race.getParticipantManagerIds()) {
+            String teamName = gameService.getManagerRepository()
+                    .findById(managerId)
+                    .map(Manager::getName)
+                    .orElse(managerId);
+            teamNames.put(managerId, teamName);
+
+            String pilotId = race.getPilotId(managerId);
+            if (pilotId != null) {
+                String pilotName = gameService.getPilotRepository()
+                        .findById(pilotId)
+                        .map(Pilot::getName)
+                        .orElse("");
+                pilotNamesByManagerId.put(managerId, pilotName);
+            }
+        }
+
+        raceView.showRaceResults(race, teamNames, pilotNamesByManagerId);
 
         showPlayerResults(race);
         checkIncidents(race);
 
-        view.waitForEnter();
+        io.waitForEnter();
     }
 
     private void showPlayerResults(Race race) {
@@ -139,18 +173,18 @@ public class RaceController {
         double prizeMoney = race.getPrizeMoney(position);
         int points = race.getPoints(position);
 
-        view.showMessage("\n💰 РЕЗУЛЬТАТЫ ВАШЕЙ КОМАНДЫ:");
-        view.showMessage("   Место: " + position);
-        view.showMessage("   Призовые: $" + prizeMoney);
-        view.showMessage("   Очки: " + points);
-        view.showMessage("   Общий бюджет: $" + gameService.getPlayerManager().getBudget());
-        view.showMessage("   Всего очков: " + gameService.getPlayerManager().getChampionshipPoints());
+        io.showMessage("\n💰 РЕЗУЛЬТАТЫ ВАШЕЙ КОМАНДЫ:");
+        io.showMessage("   Место: " + position);
+        io.showMessage("   Призовые: $" + prizeMoney);
+        io.showMessage("   Очки: " + points);
+        io.showMessage("   Общий бюджет: $" + gameService.getPlayerManager().getBudget());
+        io.showMessage("   Всего очков: " + gameService.getPlayerManager().getChampionshipPoints());
     }
 
     private void checkIncidents(Race race) {
         if (race.getIncidents().containsKey(gameService.getPlayerManager().getId())) {
-            view.showWarning("\n⚠️ ВНИМАНИЕ: В вашем болиде произошла поломка!");
-            view.showMessage("   Рекомендуется отремонтировать болид перед следующей гонкой.");
+            io.showWarning("\n⚠️ ВНИМАНИЕ: В вашем болиде произошла поломка!");
+            io.showMessage("   Рекомендуется заменить разрушенные компоненты перед следующей гонкой (раздел 3).");
         }
     }
 }

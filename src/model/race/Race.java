@@ -20,7 +20,7 @@ public class Race {
 
     private final Map<String, Double> resultByManagerId;
     private final Map<String, Integer> positionByManagerId;
-    private final Map<String, String> incidentsByManagerId;
+    private final Map<String, Incident> incidentsByManagerId;
 
     private boolean completed;
 
@@ -74,11 +74,11 @@ public class Race {
         return pilotIdByManagerId.get(managerId);
     }
 
-    public void addIncident(String managerId, String incidentText) {
-        incidentsByManagerId.put(managerId, incidentText);
+    public void addIncident(String managerId, Incident incident) {
+        incidentsByManagerId.put(managerId, incident);
     }
 
-    public Map<String, String> getIncidents() {
+    public Map<String, Incident> getIncidents() {
         return new HashMap<>(incidentsByManagerId);
     }
 

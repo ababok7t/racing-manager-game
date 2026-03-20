@@ -1,5 +1,6 @@
 package model.market;
 
+import model.Contract;
 import java.util.*;
 
 public class Market {
@@ -68,6 +69,13 @@ public class Market {
         return items.stream()
                 .filter(item -> item.getType() == MarketItem.ItemType.ENGINEER)
                 .map(item -> (MarketItem<model.staff.Engineer>) item)
+                .toList();
+    }
+
+    public List<MarketItem<Contract>> getContracts() {
+        return items.stream()
+                .filter(item -> item.getType() == MarketItem.ItemType.CONTRACT)
+                .map(item -> (MarketItem<Contract>) item)
                 .toList();
     }
 
