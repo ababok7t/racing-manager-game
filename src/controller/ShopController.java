@@ -27,16 +27,16 @@ public class ShopController {
         showBudget(player);
 
         while (true) {
-            int typeChoice = showComponentMenu();
-            if (typeChoice == 6) return;
+            int componentTypeChoice = showComponentMenu();
+            if (componentTypeChoice == 6) return;
 
-            List<? extends MarketItem<?>> items = getItemsByType(typeChoice, market);
-            if (items.isEmpty()) {
+            List<? extends MarketItem<?>> availableItems = getItemsByType(componentTypeChoice, market);
+            if (availableItems.isEmpty()) {
                 io.showMessage("Нет доступных компонентов этого типа.");
                 continue;
             }
 
-            processComponentPurchase(items, player, market);
+            processComponentPurchase(availableItems, player, market);
             break;
         }
     }
@@ -67,54 +67,54 @@ public class ShopController {
         };
     }
 
-    private void processComponentPurchase(List<? extends MarketItem<?>> items, Manager player, MarketService market) {
-        displayItems(items);
+    private void processComponentPurchase(List<? extends MarketItem<?>> availableItems, Manager player, MarketService market) {
+        displayItems(availableItems);
 
-        int compChoice = io.getUserIntInput("\nВыберите компонент (0 - назад): ", 0, items.size());
-        if (compChoice == 0) return;
+        int componentChoice = io.getUserIntInput("\nВыберите компонент (0 - назад): ", 0, availableItems.size());
+        if (componentChoice == 0) return;
 
-        MarketItem<?> selected = items.get(compChoice - 1);
-        Component selectedComp = (Component) selected.getItem();
+        MarketItem<?> selectedMarketItem = availableItems.get(componentChoice - 1);
+        Component selectedComponent = (Component) selectedMarketItem.getItem();
 
-        showItemDetails(selectedComp);
+        showItemDetails(selectedComponent);
 
-        if (!checkBudget(player, selected.getPrice())) return;
+        if (!checkBudget(player, selectedMarketItem.getPrice())) return;
 
         if (!confirmPurchase()) return;
 
-        executeComponentPurchase(selectedComp, selected, player, market);
+        executeComponentPurchase(selectedComponent, player);
     }
 
-    private void displayItems(List<? extends MarketItem<?>> items) {
+    private void displayItems(List<? extends MarketItem<?>> availableItems) {
         io.showMessage("\nДоступные компоненты:");
-        for (int i = 0; i < items.size(); i++) {
-            MarketItem<?> item = items.get(i);
-            Component comp = (Component) item.getItem();
+        for (int i = 0; i < availableItems.size(); i++) {
+            MarketItem<?> marketItem = availableItems.get(i);
+            Component component = (Component) marketItem.getItem();
             io.showMessage(String.format("%d. %s [Цена: $%,.0f, Хар-ка: %.1f]",
-                    i + 1, comp.getName(), item.getPrice(), comp.getBasePerformance()));
+                    i + 1, component.getName(), marketItem.getPrice(), component.getBasePerformance()));
         }
     }
 
-    private void showItemDetails(Component comp) {
-        io.showMessage("\n📦 Информация о товаре:");
-        io.showMessage("  Название: " + comp.getName());
-        io.showMessage("  Цена: $" + String.format("%,.0f", comp.getPrice()));
-        io.showMessage("  Характеристика: " + String.format("%.1f", comp.getBasePerformance()));
+    private void showItemDetails(Component component) {
+        io.showMessage("\nИнформация о товаре:");
+        io.showMessage("  Название: " + component.getName());
+        io.showMessage("  Цена: $" + String.format("%,.0f", component.getPrice()));
+        io.showMessage("  Характеристика: " + String.format("%.1f", component.getBasePerformance()));
 
-        if (comp instanceof Engine eng) {
-            io.showMessage("  Тип: " + eng.getEngineType());
-            io.showMessage("  Вес: " + eng.getWeight() + " кг");
-        } else if (comp instanceof Transmission trans) {
-            io.showMessage("  Совместимость: " + trans.getCompatibleEngineType());
-        } else if (comp instanceof Suspension susp) {
-            io.showMessage("  Макс. вес: " + susp.getMaxWeight() + " кг");
+        if (component instanceof Engine engine) {
+            io.showMessage("  Тип: " + engine.getEngineType());
+            io.showMessage("  Вес: " + engine.getWeight() + " кг");
+        } else if (component instanceof Transmission transmission) {
+            io.showMessage("  Совместимость: " + transmission.getCompatibleEngineType());
+        } else if (component instanceof Suspension suspension) {
+            io.showMessage("  Макс. вес: " + suspension.getMaxWeight() + " кг");
         }
     }
 
-    private boolean checkBudget(Manager player, double price) {
-        if (price > player.getBudget()) {
+    private boolean checkBudget(Manager player, double componentPrice) {
+        if (componentPrice > player.getBudget()) {
             io.showError("Недостаточно средств! Нужно еще $" +
-                    String.format("%,.0f", price - player.getBudget()));
+                    String.format("%,.0f", componentPrice - player.getBudget()));
             return false;
         }
         return true;
@@ -124,15 +124,14 @@ public class ShopController {
         return io.getUserConfirmation("\nПодтвердить покупку?");
     }
 
-    private void executeComponentPurchase(Component comp, MarketItem<?> item, Manager player, MarketService market) {
-        boolean success = gameService.getShopService().buyComponent(comp);
+    private void executeComponentPurchase(Component component, Manager player) {
+        boolean success = gameService.getShopService().buyComponent(component);
 
         if (success) {
-            market.buyItem(item.getId());
             io.showSuccess("Компонент куплен!");
             io.showMessage("Остаток бюджета: $" + String.format("%,.0f", player.getBudget()));
 
-            offerCreateCar(comp);
+            offerCreateCar(component);
         } else {
             io.showError("Не удалось купить компонент");
         }
@@ -140,17 +139,17 @@ public class ShopController {
         io.waitForEnter();
     }
 
-    private void offerCreateCar(Component comp) {
+    private void offerCreateCar(Component component) {
         boolean createCar = io.getUserConfirmation("\nХотите создать новый болид с этим компонентом?");
         if (createCar) {
             String carName = io.getUserStringInput("Введите название болида: ");
             Car newCar = gameService.getShopService().createCar(carName);
 
-            if (comp instanceof Engine) newCar.setEngine((Engine) comp);
-            else if (comp instanceof Transmission) newCar.setTransmission((Transmission) comp);
-            else if (comp instanceof Suspension) newCar.setSuspension((Suspension) comp);
-            else if (comp instanceof Aerodynamics) newCar.setAerodynamics((Aerodynamics) comp);
-            else if (comp instanceof Tyres) newCar.setTyres((Tyres) comp);
+            if (component instanceof Engine engine) newCar.setEngine(engine);
+            else if (component instanceof Transmission transmission) newCar.setTransmission(transmission);
+            else if (component instanceof Suspension suspension) newCar.setSuspension(suspension);
+            else if (component instanceof Aerodynamics aerodynamics) newCar.setAerodynamics(aerodynamics);
+            else if (component instanceof Tyres tyres) newCar.setTyres(tyres);
 
             gameService.getCarRepository().save(newCar);
             io.showSuccess("Создан новый болид: " + newCar.getName());
@@ -178,21 +177,21 @@ public class ShopController {
         int choice = io.getUserIntInput("\nВыберите инженера (0 - отмена): ", 0, engineers.size());
         if (choice == 0) return;
 
-        processEngineerHire(engineers.get(choice - 1), player, market);
+        processEngineerHire(engineers.get(choice - 1), player);
     }
 
     private void displayEngineers(List<MarketItem<Engineer>> engineers) {
         io.showMessage("\nДоступные инженеры:");
         for (int i = 0; i < engineers.size(); i++) {
-            Engineer eng = engineers.get(i).getItem();
-            double yearlySalary = eng.getSalary() * 12;
+            Engineer engineer = engineers.get(i).getItem();
+            double yearlySalary = engineer.getSalary() * 12;
             io.showMessage(String.format("%d. %s [Спец: %s, Ур.%d, З/п: $%,.0f/год, Эфф: %.0f%%]",
-                    i + 1, eng.getName(), eng.getSpecialization(), eng.getLevel(),
-                    yearlySalary, eng.getEfficiency() * 100));
+                    i + 1, engineer.getName(), engineer.getSpecialization(), engineer.getLevel(),
+                    yearlySalary, engineer.getEfficiency() * 100));
         }
     }
 
-    private void processEngineerHire(MarketItem<Engineer> item, Manager player, MarketService market) {
+    private void processEngineerHire(MarketItem<Engineer> item, Manager player) {
         Engineer engineer = item.getItem();
         double yearlySalary = engineer.getSalary() * 12;
 
@@ -205,11 +204,11 @@ public class ShopController {
 
         if (!confirmHire()) return;
 
-        executeEngineerHire(engineer, item, player, market);
+        executeEngineerHire(engineer, player);
     }
 
     private void showEngineerDetails(Engineer engineer, double yearlySalary) {
-        io.showMessage("\n📋 Информация о кандидате:");
+        io.showMessage("\nИнформация о кандидате:");
         io.showMessage("  Имя: " + engineer.getName());
         io.showMessage("  Специализация: " + engineer.getSpecialization());
         io.showMessage("  Уровень: " + engineer.getLevel());
@@ -221,11 +220,10 @@ public class ShopController {
         return io.getUserConfirmation("\nПодтвердить найм?");
     }
 
-    private void executeEngineerHire(Engineer engineer, MarketItem<Engineer> item, Manager player, MarketService market) {
+    private void executeEngineerHire(Engineer engineer, Manager player) {
         boolean success = gameService.getShopService().hireEngineer(engineer.getId());
 
         if (success) {
-            market.buyItem(item.getId());
             io.showSuccess("Инженер нанят!");
             io.showMessage("Остаток бюджета: $" + String.format("%,.0f", player.getBudget()));
             io.showMessage("Теперь в команде " + gameService.getPlayerEngineers().size() + " инженеров.");
@@ -257,7 +255,7 @@ public class ShopController {
         int choice = io.getUserIntInput("\nВыберите пилота (0 - отмена): ", 0, pilots.size());
         if (choice == 0) return;
 
-        processPilotHire(pilots.get(choice - 1), player, market);
+        processPilotHire(pilots.get(choice - 1), player);
     }
 
     private void displayPilots(List<MarketItem<Pilot>> pilots) {
@@ -269,7 +267,7 @@ public class ShopController {
         }
     }
 
-    private void processPilotHire(MarketItem<Pilot> item, Manager player, MarketService market) {
+    private void processPilotHire(MarketItem<Pilot> item, Manager player) {
         Pilot pilot = item.getItem();
 
         showPilotDetails(pilot);
@@ -281,11 +279,11 @@ public class ShopController {
 
         if (!confirmHire()) return;
 
-        executePilotHire(pilot, item, player, market);
+        executePilotHire(pilot, player);
     }
 
     private void showPilotDetails(Pilot pilot) {
-        io.showMessage("\n📋 Информация о пилоте:");
+        io.showMessage("\nИнформация о пилоте:");
         io.showMessage("  Имя: " + pilot.getName());
         io.showMessage("  Возраст: " + pilot.getAge());
         io.showMessage("  Навык: " + pilot.getSkill());
@@ -294,11 +292,10 @@ public class ShopController {
         io.showMessage("  Стабильность: " + (pilot.getConsistency() * 100) + "%");
     }
 
-    private void executePilotHire(Pilot pilot, MarketItem<Pilot> item, Manager player, MarketService market) {
+    private void executePilotHire(Pilot pilot, Manager player) {
         boolean success = gameService.getShopService().hirePilot(pilot.getId());
 
         if (success) {
-            market.buyItem(item.getId());
             io.showSuccess("Пилот нанят!");
             io.showMessage("Остаток бюджета: $" + String.format("%,.0f", player.getBudget()));
             io.showMessage("Теперь в команде " + gameService.getPlayerPilots().size() + " пилотов.");
@@ -322,12 +319,12 @@ public class ShopController {
 
             showActiveContracts(contractRepository, player);
 
-            List<MarketItem<Contract>> available = market.getAvailableContracts();
-            List<MarketItem<Contract>> signable = available.stream()
+            List<MarketItem<Contract>> availableContracts = market.getAvailableContracts();
+            List<MarketItem<Contract>> signableContracts = availableContracts.stream()
                     .filter(item -> player.getReputation() >= item.getItem().getMinReputation())
                     .toList();
 
-            if (signable.isEmpty()) {
+            if (signableContracts.isEmpty()) {
                 io.showMessage("\nНет доступных контрактов (или репутация слишком низкая).");
                 io.showMessage("Нажмите Enter, чтобы вернуться в меню.");
                 io.waitForEnter();
@@ -335,28 +332,29 @@ public class ShopController {
             }
 
             io.showMessage("\nДоступные для подписания контракты:");
-            for (int i = 0; i < signable.size(); i++) {
-                Contract c = signable.get(i).getItem();
-                int remaining = Math.max(0, c.getNumberOfRaces() - c.getRacesCompleted());
+            for (int i = 0; i < signableContracts.size(); i++) {
+                Contract contract = signableContracts.get(i).getItem();
+                int remaining = Math.max(0, contract.getNumberOfRaces() - contract.getRacesCompleted());
                 io.showMessage(String.format("%d. %s [Цена: $%,.0f, Гонки: %d, Мин. реп.: %d, Осталось: %d]",
-                        i + 1, c.getName(), c.getPrice(), c.getNumberOfRaces(), c.getMinReputation(), remaining));
+                        i + 1, contract.getName(), contract.getPrice(),
+                        contract.getNumberOfRaces(), contract.getMinReputation(), remaining));
             }
 
-            int choice = io.getUserIntInput("\nВыберите контракт для подписания (0 - назад): ", 0, signable.size());
-            if (choice == 0) return;
+            int contractChoice = io.getUserIntInput("\nВыберите контракт для подписания (0 - назад): ", 0, signableContracts.size());
+            if (contractChoice == 0) return;
 
-            Contract selected = signable.get(choice - 1).getItem();
-            io.showMessage("\nВы выбрали: " + selected.getName());
-            io.showMessage("Стоимость: $" + String.format("%,.0f", selected.getPrice()));
-            io.showMessage("Выполнение: " + selected.getNumberOfRaces() + " гонок");
-            io.showMessage("Минимальная репутация: " + selected.getMinReputation());
+            Contract selectedContract = signableContracts.get(contractChoice - 1).getItem();
+            io.showMessage("\nВы выбрали: " + selectedContract.getName());
+            io.showMessage("Стоимость: $" + String.format("%,.0f", selectedContract.getPrice()));
+            io.showMessage("Выполнение: " + selectedContract.getNumberOfRaces() + " гонок");
+            io.showMessage("Минимальная репутация: " + selectedContract.getMinReputation());
 
             if (!io.getUserConfirmation("\nПодписать контракт?")) {
                 io.waitForEnter();
                 continue;
             }
 
-            boolean success = gameService.getShopService().signContract(selected);
+            boolean success = gameService.getShopService().signContract(selectedContract);
             if (success) {
                 io.showSuccess("Контракт подписан!");
             } else {
@@ -377,9 +375,9 @@ public class ShopController {
         }
 
         for (int i = 0; i < active.size(); i++) {
-            Contract c = active.get(i);
-            int remaining = Math.max(0, c.getNumberOfRaces() - c.getRacesCompleted());
-            io.showMessage(String.format("   %d) %s [Осталось: %d/%d гонок]", i + 1, c.getName(), remaining, c.getNumberOfRaces()));
+            Contract contract = active.get(i);
+            int remaining = Math.max(0, contract.getNumberOfRaces() - contract.getRacesCompleted());
+            io.showMessage(String.format("   %d) %s [Осталось: %d/%d гонок]", i + 1, contract.getName(), remaining, contract.getNumberOfRaces()));
         }
     }
 }

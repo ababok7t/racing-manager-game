@@ -5,12 +5,11 @@ public class Tyres extends Component {
     private final String compound;
     private final double gripModifier;
 
-    // Маркет создает шины как: (name, price, baseGrip, compound, gripModifier, weight)
     public Tyres(String name,
                   double price,
                   double baseGrip,
-                  String compound,
-                  double gripModifier,
+                  String compound, //тип шин и(мягуий, средний или жесткий)
+                  double gripModifier, //сцепление
                   int weight) {
         super(name, weight, price);
         this.baseGrip = baseGrip;

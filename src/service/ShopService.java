@@ -70,7 +70,7 @@ public class ShopService {
     }
 
     public boolean assembleCar(String carId, Engine engine, Transmission transmission,
-                               Suspension suspension, Aerodynamics aero, Tyres tyres) {
+                               Suspension suspension, Aerodynamics aerodynamics, Tyres tyres) {
         Optional<Car> carOpt = gameService.getCarRepository().findById(carId);
 
         if (carOpt.isPresent()) {
@@ -87,14 +87,27 @@ public class ShopService {
             car.setEngine(engine);
             car.setTransmission(transmission);
             car.setSuspension(suspension);
-            car.setAerodynamics(aero);
+            car.setAerodynamics(aerodynamics);
             car.setTyres(tyres);
             car.setBuilt(true);
 
             gameService.getCarRepository().save(car);
+            consumeAssembledComponents(engine, transmission, suspension, aerodynamics, tyres);
             return true;
         }
         return false;
+    }
+
+    private void consumeAssembledComponents(Engine engine,
+                                            Transmission transmission,
+                                            Suspension suspension,
+                                            Aerodynamics aerodynamics,
+                                            Tyres tyres) {
+        if (engine != null) gameService.getComponentRepository().delete(engine.getId());
+        if (transmission != null) gameService.getComponentRepository().delete(transmission.getId());
+        if (suspension != null) gameService.getComponentRepository().delete(suspension.getId());
+        if (aerodynamics != null) gameService.getComponentRepository().delete(aerodynamics.getId());
+        if (tyres != null) gameService.getComponentRepository().delete(tyres.getId());
     }
 
     public boolean repairCar(String carId) {

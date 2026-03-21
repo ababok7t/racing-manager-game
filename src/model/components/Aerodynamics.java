@@ -3,7 +3,6 @@ package model.components;
 public class Aerodynamics extends Component {
     private final double baseDownforce;
 
-    // Маркет создает аэродинамику как: (name, price, baseDownforce, weight)
     public Aerodynamics(String name, double price, double baseDownforce, int weight) {
         super(name, weight, price);
         this.baseDownforce = baseDownforce;
@@ -19,8 +18,7 @@ public class Aerodynamics extends Component {
     }
 
     @Override
-    public double getBasePerformance() {
-        // Масштабируем вниз по сравнению с двигателем, чтобы значения были сопоставимы
+    public double getBasePerformance() { //для баланса
         return baseDownforce * 10.0;
     }
 }

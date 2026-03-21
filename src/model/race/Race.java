@@ -5,10 +5,6 @@ import java.util.*;
 import model.Car;
 import model.Manager;
 
-/**
- * Простая модель гонки для консольного прототипа ЛР1.
- * Хранит список участников (managerId -> carId/pilotId), результаты и инциденты.
- */
 public class Race {
     private final String id;
     private final Track track;

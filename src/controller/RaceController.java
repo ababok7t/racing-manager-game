@@ -21,7 +21,7 @@ public class RaceController {
 
     public void startRace() {
         io.clearScreen();
-        io.showMessage("\n🏁 ПОДГОТОВКА К ГОНКЕ 🏁");
+        io.showMessage("\nПОДГОТОВКА К ГОНКЕ");
 
         if (!gameService.canParticipate()) {
             showCantParticipateMessage();
@@ -34,7 +34,7 @@ public class RaceController {
         Car selectedCar = selectCar();
         if (selectedCar == null) return;
         if (selectedCar.getWearPercentage() > 50) {
-            io.showWarning("⚠️ Высокий износ болида (>50%). Возможны инциденты.");
+            io.showWarning("Высокий износ болида (>50%). Возможны инциденты.");
             boolean proceed = io.getUserConfirmation("Продолжить гонку?");
             if (!proceed) {
                 io.showMessage("Гонка отменена.");
@@ -56,9 +56,9 @@ public class RaceController {
 
     private void showCantParticipateMessage() {
         io.showError("Невозможно начать гонку! Необходимо:");
-        io.showMessage("  • Собранный болид без разрушенных компонентов");
-        io.showMessage("  • Пилот в команде");
-        io.showMessage("  • Инженер в команде");
+        io.showMessage("  - Собранный болид без разрушенных компонентов");
+        io.showMessage("  - Пилот в команде");
+        io.showMessage("  - Инженер в команде");
         io.waitForEnter();
     }
 
@@ -128,7 +128,7 @@ public class RaceController {
 
     private void showRaceInfo(Race race, Car car, Pilot pilot, int opponentsAdded) {
         Track track = race.getTrack();
-        io.showMessage("\n📋 Информация о гонке:");
+        io.showMessage("\nИнформация о гонке:");
         io.showMessage("  Трасса: " + track.getName() + " (" + track.getCountry() + ")");
         io.showMessage("  Круги: " + track.getLaps());
         io.showMessage("  Погода: " + race.getWeather());
@@ -138,7 +138,7 @@ public class RaceController {
     }
 
     private void simulateAndShowResults(Race race) {
-        io.showMessage("\n🏁 ГОНКА НАЧИНАЕТСЯ! 🏁\n");
+        io.showMessage("\nГОНКА НАЧИНАЕТСЯ!\n");
         gameService.getRaceService().simulateRace(race);
         Map<String, String> teamNames = new HashMap<>();
         Map<String, String> pilotNamesByManagerId = new HashMap<>();
@@ -173,7 +173,7 @@ public class RaceController {
         double prizeMoney = race.getPrizeMoney(position);
         int points = race.getPoints(position);
 
-        io.showMessage("\n💰 РЕЗУЛЬТАТЫ ВАШЕЙ КОМАНДЫ:");
+        io.showMessage("\nРЕЗУЛЬТАТЫ ВАШЕЙ КОМАНДЫ:");
         io.showMessage("   Место: " + position);
         io.showMessage("   Призовые: $" + prizeMoney);
         io.showMessage("   Очки: " + points);
@@ -183,7 +183,7 @@ public class RaceController {
 
     private void checkIncidents(Race race) {
         if (race.getIncidents().containsKey(gameService.getPlayerManager().getId())) {
-            io.showWarning("\n⚠️ ВНИМАНИЕ: В вашем болиде произошла поломка!");
+            io.showWarning("\nВ вашем болиде произошла поломка!");
             io.showMessage("   Рекомендуется заменить разрушенные компоненты перед следующей гонкой (раздел 3).");
         }
     }

@@ -8,7 +8,6 @@ public abstract class Staff {
     private double price;
     private int experience;
 
-    // Хранится в виде ID, а не ссылки на Manager, чтобы не создавать сильные связи.
     private String managerId;
     private boolean hired;
 

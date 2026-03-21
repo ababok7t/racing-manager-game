@@ -3,9 +3,8 @@ package model.components;
 public class Engine extends Component {
     private final double basePower;
     private final String engineType;
-    private final double reliability; // влияет на отказоустойчивость (косвенно)
+    private final double reliability; //надежность
 
-    // Конструктор под то, как создаёт компоненты MarketService
     public Engine(String name,
                   double price,
                   double basePower,
@@ -31,7 +30,6 @@ public class Engine extends Component {
     }
 
     public double calculatePerformance() {
-        // Производительность уменьшается с износом (0..100)
         return getBasePerformance() * (1 - getWear() / 100.0);
     }
 

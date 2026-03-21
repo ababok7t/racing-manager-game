@@ -55,9 +55,6 @@ public abstract class Component {
 
     public abstract double calculatePerformance();
 
-    /**
-     * Базовая характеристика компонента без учета износа (для отображения).
-     */
     public abstract double getBasePerformance();
 
     @Override

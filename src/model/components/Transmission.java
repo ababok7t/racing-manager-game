@@ -1,7 +1,7 @@
 package model.components;
 
 public class Transmission extends Component {
-    private final double baseEfficiency; // 0..1+
+    private final double baseEfficiency;
     private final String compatibleEngineType;
 
     public Transmission(String name,
@@ -27,7 +27,6 @@ public class Transmission extends Component {
     }
 
     public double calculatePerformance() {
-        // Нормируем в район 0..100 для скорости симуляции
         return getBasePerformance() * (1 - getWear() / 100.0);
     }
 

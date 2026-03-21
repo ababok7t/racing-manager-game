@@ -83,23 +83,22 @@ public class InfoController {
     }
 
     private void displayStats(RaceStatistics stats) {
-        io.showMessage("\n📊 Общая статистика:");
-        io.showMessage("   🏆 Победы: " + stats.wins);
-        io.showMessage("   🥉 Подиумы: " + stats.podiums);
-        io.showMessage("   ⭐ Всего очков: " + stats.totalPoints);
-        io.showMessage("   🏁 Лучший результат: " + stats.bestPosition + " место (" + stats.bestRace + ")");
-        io.showMessage("   📈 Очков в среднем за гонку: " +
+        io.showMessage("\nОбщая статистика:");
+        io.showMessage("   Победы: " + stats.wins);
+        io.showMessage("   Подиумы: " + stats.podiums);
+        io.showMessage("   Всего очков: " + stats.totalPoints);
+        io.showMessage("   Лучший результат: " + stats.bestPosition + " место (" + stats.bestRace + ")");
+        io.showMessage("   Очков в среднем за гонку: " +
                 String.format("%.1f", (double) stats.totalPoints / stats.racesCount));
     }
 
     private void displayRecentRaces(List<Race> races, String playerId) {
-        io.showMessage("\n📅 Последние 5 гонок:");
+        io.showMessage("\nПоследние 5 гонок:");
         List<Race> recent = races.subList(Math.max(0, races.size() - 5), races.size());
 
         for (Race race : recent) {
             int pos = race.getPosition(playerId);
-            String medal = pos == 1 ? "🥇" : (pos == 2 ? "🥈" : (pos == 3 ? "🥉" : "  "));
-            io.showMessage("   " + medal + " " + race.getTrack().getName() +
+            io.showMessage("   " + race.getTrack().getName() +
                     ": " + pos + " место (" + race.getPoints(pos) + " очков)");
         }
     }
@@ -132,7 +131,7 @@ public class InfoController {
             if (!pilots.isEmpty()) {
                 io.showMessage("   Пилоты:");
                 for (Pilot pilot : pilots) {
-                    io.showMessage("     • " + pilot.getName() +
+                    io.showMessage("     - " + pilot.getName() +
                             " (навык: " + String.format("%.1f", pilot.getSkill()) + ")");
                 }
             }
@@ -150,7 +149,7 @@ public class InfoController {
             }
         }
 
-        io.showMessage("\n📊 Ваша позиция: " + playerRank + " из " + (opponents.size() + 1));
+        io.showMessage("\nВаша позиция: " + playerRank + " из " + (opponents.size() + 1));
     }
 
     public void viewRecentResults() {
@@ -181,7 +180,7 @@ public class InfoController {
         double prize = race.getPrizeMoney(pos);
         int points = race.getPoints(pos);
 
-        io.showMessage("\n🏁 " + race.getTrack().getName());
+        io.showMessage("\n" + race.getTrack().getName());
         io.showMessage("  Место: " + pos);
         io.showMessage("  Призовые: $" + String.format("%,.0f", prize));
         io.showMessage("  Очки: " + points);

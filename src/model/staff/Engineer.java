@@ -4,10 +4,8 @@ public class Engineer extends Staff {
     private final String specialization;
     private final int level;
     private final double salary; // в год
-    private final double efficiency; // 0..1+
+    private final double efficiency;
 
-    // MarketService создает инженеров как:
-    // (name, specialization, level, monthlySalary, efficiency)
     public Engineer(String name, String specialization, int level, double monthlySalary, double efficiency) {
         super(name, monthlySalary * 12.0, level);
         this.specialization = specialization;
@@ -32,10 +30,6 @@ public class Engineer extends Staff {
         return efficiency;
     }
 
-    /**
-     * Бонус к работе команды: чем выше уровень и эффективность, тем сильнее инженерский вклад.
-     * Значение предназначено для агрегирования в RaceService.
-     */
     public double getBonus() {
         return efficiency * (level / 10.0);
     }

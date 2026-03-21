@@ -82,14 +82,14 @@ public class BotService {
                 }
                 Suspension suspension = compatibleSuspensions.get(random.nextInt(compatibleSuspensions.size()));
 
-                Aerodynamics aero = aerodynamics.get(random.nextInt(aerodynamics.size()));
+                Aerodynamics selectedAerodynamics = aerodynamics.get(random.nextInt(aerodynamics.size()));
                 Tyres tyres = tyresList.get(random.nextInt(tyresList.size()));
 
                 // Клонируем компоненты, чтобы износ соперников не портил товары в меню.
                 car.setEngine(cloneEngine(engine));
                 car.setTransmission(cloneTransmission(transmission));
                 car.setSuspension(cloneSuspension(suspension));
-                car.setAerodynamics(cloneAerodynamics(aero));
+                car.setAerodynamics(cloneAerodynamics(selectedAerodynamics));
                 car.setTyres(cloneTyres(tyres));
                 car.setBuilt(true);
             }
@@ -113,10 +113,10 @@ public class BotService {
         int engCount = Math.min(2 + random.nextInt(2), availableEngineers.size());
         for (int i = 0; i < engCount; i++) {
             if (!availableEngineers.isEmpty()) {
-                Engineer eng = availableEngineers.get(random.nextInt(availableEngineers.size()));
-                gameService.getEngineerRepository().hire(eng.getId(), manager.getId());
-                manager.addEngineerId(eng.getId());
-                availableEngineers.remove(eng);
+                Engineer engineer = availableEngineers.get(random.nextInt(availableEngineers.size()));
+                gameService.getEngineerRepository().hire(engineer.getId(), manager.getId());
+                manager.addEngineerId(engineer.getId());
+                availableEngineers.remove(engineer);
             }
         }
 

@@ -7,14 +7,12 @@ public class Market {
     private String id;
     private String name;
     private List<MarketItem<?>> items;
-    private double popularity;
     private boolean isOpen;
 
     public Market(String name) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.items = new ArrayList<>();
-        this.popularity = 50.0;
         this.isOpen = true;
     }
 
@@ -79,9 +77,6 @@ public class Market {
                 .toList();
     }
 
-    public double getPopularity() { return popularity; }
-    public void setPopularity(double popularity) { this.popularity = popularity; }
-
     public boolean isOpen() { return isOpen; }
     public void setOpen(boolean open) { isOpen = open; }
 
@@ -96,6 +91,6 @@ public class Market {
     @Override
     public String toString() {
         return String.format("Маркет %s | Товаров: %d | Популярность: %.1f",
-                name, items.size(), popularity);
+                name, items.size());
     }
 }

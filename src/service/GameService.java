@@ -21,6 +21,7 @@ public class GameService {
     private final ShopService shopService;
     private final MarketService marketService;
     private final BotService botService;
+    private final GarageService garageService;
 
     private Manager playerManager;
     private final Random random = new Random();
@@ -40,22 +41,19 @@ public class GameService {
         this.shopService = new ShopService(this);
         this.marketService = new MarketService(this);
         this.botService = new BotService(this);
+        this.garageService = new GarageService(this);
 
         initializeGame();
     }
 
     private void initializeGame() {
-        // Создаем менеджера игрока
         playerManager = new Manager("Ваша команда", 1000000);
         managerRepository.save(playerManager);
 
-        // Инициализируем трассы
         initializeTracks();
 
-        // Инициализируем маркет
         marketService.initializeMarket();
 
-        // Инициализируем команды соперников
         botService.initializeOpponentManagers(5);
     }
 
@@ -80,6 +78,7 @@ public class GameService {
     public ShopService getShopService() { return shopService; }
     public MarketService getMarketService() { return marketService; }
     public BotService getBotService() { return botService; }
+    public GarageService getGarageService() { return garageService; }
 
     public Manager getPlayerManager() { return playerManager; }
     public Random getRandom() { return random; }

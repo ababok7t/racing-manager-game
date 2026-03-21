@@ -12,10 +12,8 @@ public class Track {
     private final int laps;
     private final double difficulty; // 0..1+
 
-    // Технически можно хранить секции, но для ЛР1 достаточно параметров трека.
     private final List<TrackUnit> trackUnits;
 
-    // Маркет/игровой слой создает трек так: (name, country, length, laps, difficulty)
     public Track(String name, String country, double length, int laps, double difficulty) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
@@ -27,7 +25,6 @@ public class Track {
         initTrackUnits();
     }
 
-    // Старый конструктор (если где-то используется)
     public Track(String name, double length, int numberOfLaps, int numberOfTurns) {
         this(name, "Unknown", length, numberOfLaps, Math.max(0.1, Math.min(1.0, numberOfTurns / 100.0)));
     }
@@ -53,7 +50,6 @@ public class Track {
     }
 
     public List<TrackUnit> getTrackUnits() {
-        // Копия, чтобы снаружи нельзя было менять состав трассы.
         return new ArrayList<>(trackUnits);
     }
 
@@ -62,21 +58,16 @@ public class Track {
     }
 
     private void initTrackUnits() {
-        // По методичке трасса должна включать разные типы участков.
-        // Заполняем список детерминированно из базовых параметров трека.
         trackUnits.clear();
 
-        // Распределяем длину по секциям (сумма долей = 1.0)
         double d = Math.max(0.0, Math.min(1.0, difficulty));
-        double straightShare = 0.35 + (1.0 - d) * 0.1; // более “легкая” трасса -> больше прямых
-        double turnShare = 0.35 + d * 0.1;          // более сложная -> больше поворотов
+        double straightShare = 0.35 + (1.0 - d) * 0.1;
+        double turnShare = 0.35 + d * 0.1;
         double upShare = 0.15 + d * 0.05;
         double downShare = 1.0 - straightShare - turnShare - upShare;
 
-        // На случай округлений
         downShare = Math.max(0.05, downShare);
 
-        // Нормализуем доли к сумме 1.0, чтобы длина секций не выходила за рамки трека.
         double sumShares = straightShare + turnShare + upShare + downShare;
         if (sumShares > 0) {
             double k = 1.0 / sumShares;
