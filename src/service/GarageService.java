@@ -8,9 +8,6 @@ import model.components.Transmission;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Сервис гаража: фильтрация болидов и совместимость компонентов.
- */
 public class GarageService {
     private final GameService gameService;
 

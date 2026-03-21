@@ -191,9 +191,6 @@ public class InfoController {
         }
     }
 
-    /**
-     * Вспомогательный класс для статистики
-     */
     private static class RaceStatistics {
         int racesCount = 0;
         int wins = 0;

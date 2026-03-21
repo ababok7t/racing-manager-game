@@ -91,8 +91,6 @@ public class GameService {
 
     public List<Car> getUsableCars() {
         return carRepository.findByManagerId(playerManager.getId()).stream()
-                // По методичке можно продолжать ездить при высоком износе,
-                // но сломанные компоненты требуют замены.
                 .filter(car -> car.isComplete() && !car.hasBrokenComponents())
                 .toList();
     }
@@ -121,7 +119,7 @@ public class GameService {
                 manager.addPrizeMoney(prizeMoney);
                 manager.addChampionshipPoints(points);
 
-                // Репутация растет за место (нужно для покупки спонсорских контрактов).
+                //реп зависит от позиции
                 if (managerId.equals(playerManager.getId())) {
                     manager.addReputation(getReputationDelta(position));
                 }
@@ -142,7 +140,6 @@ public class GameService {
                 pilotRepository.findById(pilotId).ifPresent(Pilot::gainExperience);
             }
 
-            // Спонсорские контракты обновляются только для игрока.
             if (managerId.equals(playerManager.getId())) {
                 processSponsorContractsAfterRace();
             }
@@ -160,7 +157,6 @@ public class GameService {
     }
 
     private void processSponsorContractsAfterRace() {
-        // Принимаем, что каждый активный контракт выполняется в рамках каждой гонки.
         for (String contractId : playerManager.getContractIds()) {
             contractRepository.findById(contractId).ifPresent(contract -> {
                 if (contract.isCompleted()) {
@@ -173,7 +169,6 @@ public class GameService {
                 double payoutPerRace = contract.getPrice() * 1.5 / Math.max(1, contract.getNumberOfRaces());
                 playerManager.addPrizeMoney(payoutPerRace);
 
-                // Фиксируем завершение и награду за выполнение.
                 if (contract.isCompleted()) {
                     playerManager.removeContractId(contractId);
                     playerManager.addReputation(5);

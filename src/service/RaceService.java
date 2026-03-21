@@ -28,13 +28,12 @@ public class RaceService {
             engineerBonus = engineers.stream()
                     .mapToDouble(Engineer::getBonus)
                     .average()
-                    .orElse(1.0) + 1.0;
+                    .orElse(1.0) + 1.0; //если пусто то 1
         }
 
         double baseLapTime = 90.0;
         double lapTime = baseLapTime / (carPerformance * pilotPerformance * engineerBonus);
 
-        // Учет особенностей трассы через состав участков (прямые/повороты/подъёмы/спуски).
         List<TrackUnit> units = track.getTrackUnits();
         double avgSpeedMod = units.stream()
                 .mapToDouble(u -> u.getType().getSpeedModificator())
@@ -45,12 +44,10 @@ public class RaceService {
                 .average()
                 .orElse(1.0);
 
-        // speedModificator меньше 1 => медленнее => больше время.
         if (avgSpeedMod > 0) {
             lapTime *= 1.0 / avgSpeedMod;
         }
 
-        // controlModificator больше 1 => тяжелее контроль, и сильнее бьёт по низкой согласованности пилота.
         double consistency = pilot.getConsistency();
         double controlPenalty = 1.0 + Math.max(0.0, avgControlMod - 1.0) * (1.0 - consistency);
         lapTime *= controlPenalty;
@@ -64,7 +61,6 @@ public class RaceService {
         if (!car.isComplete()) return Optional.empty();
 
         double avgWear = car.getWearPercentage() / 100;
-        // По методичке инциденты возможны, когда износ уже достаточно высокий.
         if (avgWear < 0.5) return Optional.empty();
 
         double incidentProb = avgWear * pilot.getAggression() * 0.1;
@@ -79,10 +75,8 @@ public class RaceService {
 
             if (!components.isEmpty()) {
                 Component broken = components.get(random.nextInt(components.size()));
-                // Компонент после отказа становится разрушенным и не чинится.
                 broken.setWear(100);
 
-                // Маппинг типа компонента -> тип инцидента (по методичке).
                 Incident incident;
                 if (broken instanceof Engine) {
                     incident = Incident.ENGINE_ERROR;

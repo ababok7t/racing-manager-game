@@ -2,10 +2,6 @@ package view;
 
 import java.util.Scanner;
 
-/**
- * Универсальный слой ввода/вывода для консольного интерфейса.
- * Экранная логика (меню/списки/результаты) должна жить в отдельных view-классах.
- */
 public class ConsoleIO {
     private final Scanner scanner;
 
@@ -14,8 +10,7 @@ public class ConsoleIO {
     }
 
     public void clearScreen() {
-        // В консоли нет “настоящего” clear, поэтому используем безопасный вариант.
-        System.out.print("\n".repeat(60));
+        System.out.print("\n".repeat(60)); //очистка экрана
     }
 
     public void showMessage(String message) {

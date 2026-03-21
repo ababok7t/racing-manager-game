@@ -22,15 +22,9 @@ public class MarketService {
         initializeMainMarket();
     }
 
-    /**
-     * Метод вызывается из GameService при старте. В текущей реализации маркет заполняется в конструкторе,
-     * поэтому метод здесь оставлен как совместимость.
-     */
     public void initializeMarket() {
         if (gameService == null) return;
 
-        // Инициализируем "доступных для найма" сущности в репозиториях.
-        // Компоненты игрок покупает через ShopService, поэтому их сюда не добавляем.
         for (MarketItem<Pilot> item : mainMarket.getPilots()) {
             Pilot pilot = item.getItem();
             gameService.getPilotRepository().save(pilot);
@@ -224,7 +218,6 @@ public class MarketService {
         }
     }
 
-    // Методы для ShopService (маркируем товар как купленный/нанятый)
     public void buyComponent(Component component) {
         if (component == null) return;
         buyItem(component.getId());

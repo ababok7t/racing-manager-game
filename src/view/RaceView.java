@@ -9,9 +9,6 @@ import model.staff.Pilot;
 import java.util.List;
 import java.util.Map;
 
-/**
- * View-слой для экрана гонки: треки/выбор/результаты.
- */
 public class RaceView {
     private final ConsoleIO io;
 

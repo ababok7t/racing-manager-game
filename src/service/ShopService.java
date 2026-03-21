@@ -68,7 +68,7 @@ public class ShopService {
         gameService.getPlayerManager().addCarId(car.getId());
         return car;
     }
-
+//сборка брички
     public boolean assembleCar(String carId, Engine engine, Transmission transmission,
                                Suspension suspension, Aerodynamics aerodynamics, Tyres tyres) {
         Optional<Car> carOpt = gameService.getCarRepository().findById(carId);
@@ -116,7 +116,6 @@ public class ShopService {
 
         if (carOpt.isPresent()) {
             Car car = carOpt.get();
-            // Разрушенные компоненты не подлежат восстановлению.
             if (car.hasBrokenComponents()) return false;
             double repairCost = car.getWearPercentage() * 100;
 
@@ -135,7 +134,6 @@ public class ShopService {
 
         Manager player = gameService.getPlayerManager();
 
-        // Требование по репутации.
         if (player.getReputation() < contract.getMinReputation()) {
             return false;
         }
@@ -144,10 +142,8 @@ public class ShopService {
             return false;
         }
 
-        // Маркируем контракт как недоступный на рынке.
         gameService.getMarketService().buyItem(contract.getId());
 
-        // Сохраняем контракт у игрока.
         gameService.getContractRepository().save(contract);
         player.addContractId(contract.getId());
         gameService.getManagerRepository().save(player);

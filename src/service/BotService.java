@@ -36,7 +36,6 @@ public class BotService {
             Car car = new Car(name + " Car " + (i + 1));
             car.setManagerId(manager.getId());
 
-            // Соперники должны быть собраны “из рынка”, т.к. на старте componentRepository пустой.
             MarketService market = gameService.getMarketService();
 
             List<Engine> engines = market.getAvailableEngines().stream()
@@ -85,7 +84,6 @@ public class BotService {
                 Aerodynamics selectedAerodynamics = aerodynamics.get(random.nextInt(aerodynamics.size()));
                 Tyres tyres = tyresList.get(random.nextInt(tyresList.size()));
 
-                // Клонируем компоненты, чтобы износ соперников не портил товары в меню.
                 car.setEngine(cloneEngine(engine));
                 car.setTransmission(cloneTransmission(transmission));
                 car.setSuspension(cloneSuspension(suspension));

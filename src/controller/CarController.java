@@ -201,9 +201,6 @@ public class CarController {
         }
     }
 
-    /**
-     * Вспомогательный класс для сборки болида
-     */
     private class CarAssembly {
         private final Car car;
         private Engine engine;
@@ -230,7 +227,6 @@ public class CarController {
         }
 
         private boolean selectEngine() {
-            // Если компонент уже стоит и он не разрушен — оставляем
             if (engine != null && !engine.isBroken()) return true;
 
             List<Engine> engines = gameService.getComponentRepository().findByType(Engine.class);

@@ -56,7 +56,7 @@ public class GameController {
     }
 
     private void exit() {
-        io.showMessage("\nСпасибо за игру! До свидания!");
+        io.showMessage("\nСеанс окончен");
         isRunning = false;
     }
 }
