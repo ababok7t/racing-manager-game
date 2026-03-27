@@ -182,9 +182,14 @@ public class RaceController {
     }
 
     private void checkIncidents(Race race) {
-        if (race.getIncidents().containsKey(gameService.getPlayerManager().getId())) {
-            io.showWarning("\nВ вашем болиде произошла поломка!");
-            io.showMessage("   Рекомендуется заменить разрушенные компоненты перед следующей гонкой (раздел 3).");
+        Incident inc = race.getIncidents().get(gameService.getPlayerManager().getId());
+        if (inc == null) return;
+
+        io.showWarning("\nИнцидент у вашей команды: " + inc.getType());
+        if (inc.isFatal()) {
+            io.showMessage("   Компонент разрушен. Рекомендуется заменить разрушенные компоненты перед следующей гонкой (раздел 3).");
+        } else {
+            io.showMessage("   Это не фатально, но может ухудшить время/состояние болида.");
         }
     }
 }

@@ -144,6 +144,9 @@ public class GameService {
                 processSponsorContractsAfterRace();
             }
         }
+
+        // После каждой гонки соперники "ходят" как игрок: чинят/меняют и докупают с рынка.
+        botService.updateAllOpponentManagers();
     }
 
     private int getReputationDelta(int position) {
