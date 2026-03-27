@@ -92,7 +92,6 @@ public class BotService {
 
     public void updateAllOpponentManagers() {
         MarketService marketService = gameService.getMarketService();
-        // Local pools so we don't "oversell" the same market item to multiple cars in one tick.
         List<MarketItem<Engine>> availableEngines = new ArrayList<>(marketService.getAvailableEngines());
         List<MarketItem<Transmission>> availableTransmissions = new ArrayList<>(marketService.getAvailableTransmissions());
         List<MarketItem<Suspension>> availableSuspensions = new ArrayList<>(marketService.getAvailableSuspensions());
@@ -104,7 +103,6 @@ public class BotService {
                     availableEngines, availableTransmissions, availableSuspensions, availableAerodynamics, availableTyres);
         }
 
-        // Обновляем рынок
         marketService.refreshMarket();
     }
 
@@ -151,7 +149,6 @@ public class BotService {
 
         carModified |= detachBrokenComponents(car);
 
-        // Match player assembly rules: engine first, then compatible transmission/suspension.
         carModified |= tryBuyEngine(manager, car, marketService, availableEngines);
         carModified |= tryBuyTransmission(manager, car, marketService, availableTransmissions);
         carModified |= tryBuySuspension(manager, car, marketService, availableSuspensions);
@@ -166,7 +163,6 @@ public class BotService {
     }
 
     private void repairCarIfEligible(Manager manager, Car car) {
-        // Аналог логики игрока: ремонт возможен только если нет разрушенных компонентов.
         if (!car.isComplete()) return;
         if (car.hasBrokenComponents()) return;
         if (car.getWearPercentage() <= 50) return;
@@ -184,7 +180,6 @@ public class BotService {
         if (car.getEngine() != null && car.getEngine().isBroken()) {
             car.setEngine(null);
             car.setBuilt(false);
-            // При замене двигателя старые узлы могут стать несовместимыми — безопаснее пересобрать.
             car.setTransmission(null);
             car.setSuspension(null);
             changed = true;
@@ -211,7 +206,6 @@ public class BotService {
             changed = true;
         }
 
-        // Если двигатель сменили/поставили впервые — проверим совместимость оставшихся узлов.
         if (car.getEngine() != null) {
             if (car.getTransmission() != null && !car.getTransmission().isCompatibleWith(car.getEngine())) {
                 car.setTransmission(null);

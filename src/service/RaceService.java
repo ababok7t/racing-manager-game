@@ -63,11 +63,9 @@ public class RaceService {
         double wear01 = car.getWearPercentage() / 100.0;
         if (wear01 < 0.50) return Optional.empty();
 
-        // Короткая формула: выше износ/агрессия/сложность трассы/плохая погода — выше шанс,
-        // выше стабильность — ниже шанс.
-        double wearFactor = Math.min(1.0, (wear01 - 0.50) / 0.50); // 0..1 for 50..100
+        double wearFactor = Math.min(1.0, (wear01 - 0.50) / 0.50);
         double difficulty = (track == null) ? 0.6 : Math.max(0.0, track.getDifficulty());
-        double weatherRisk = 1.0 + (1.0 - weatherSpeedModifier(weather)) * 0.8; // SUNNY≈1.0 ... RAINY≈1.2
+        double weatherRisk = 1.0 + (1.0 - weatherSpeedModifier(weather)) * 0.8;
         double incidentProb = wearFactor
                 * (0.03 + pilot.getAggression() * 0.12)
                 * (1.10 - pilot.getConsistency() * 0.30)
@@ -75,7 +73,6 @@ public class RaceService {
                 * weatherRisk;
         if (random.nextDouble() >= incidentProb) return Optional.empty();
 
-        // Выбор инцидента по весам (без “сломать случайный компонент и потом придумывать тип”).
         double spinW = 6.0 + (1.0 - pilot.getConsistency()) * 6.0;
         double aeroW = 1.0 + (car.getAerodynamics().getWear() / 100.0) * 6.0 * wearFactor;
         double collisionW = (0.8 + pilot.getAggression() * 5.0 * wearFactor + (car.getTyres().getWear() / 100.0) * 2.5)
@@ -112,14 +109,11 @@ public class RaceService {
 
     private double engineFailureFactor(Engine engine) {
         if (engine == null) return 1.0;
-        // reliability у двигателей в MarketService сейчас ~150..170 (чем выше — тем надёжнее).
-        // Нормализуем: 150 => 1.0, 200 => 0.75, 100 => 1.25
         double rel = Math.max(50.0, Math.min(200.0, engine.getReliability()));
         return 150.0 / rel;
     }
 
     private void applyIncidentConsequences(Car car, Incident incident) {
-        // SPIN — только потеря времени, без поломки.
         if (incident == Incident.SPIN) return;
 
         switch (incident) {
@@ -203,7 +197,6 @@ public class RaceService {
 
             totalTime += lapTime;
 
-            // Only allow one incident per participant.
             if (lap % 10 == 0 && lap > 0 && !hasIncident) {
                 Optional<Incident> incident = checkIncident(car, pilot, race.getTrack(), race.getWeather());
                 if (incident.isPresent()) {
