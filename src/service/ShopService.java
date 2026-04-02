@@ -7,6 +7,8 @@ import model.staff.*;
 import java.util.*;
 
 public class ShopService {
+    public static final double CAR_INSURANCE_PRICE = 200_000;
+
     private final GameService gameService;
 
     public ShopService(GameService gameService) {
@@ -127,6 +129,24 @@ public class ShopService {
             }
         }
         return false;
+    }
+
+    public boolean buyCarInsurance(String carId) {
+        Manager player = gameService.getPlayerManager();
+        Optional<Car> carOpt = gameService.getCarRepository().findById(carId);
+        if (carOpt.isEmpty()) return false;
+
+        Car car = carOpt.get();
+        if (car.getManagerId() == null || !car.getManagerId().equals(player.getId())) return false;
+        if (!car.isComplete() || car.hasBrokenComponents()) return false;
+        if (car.isInsured()) return false;
+
+        if (!player.spendBudget(CAR_INSURANCE_PRICE)) return false;
+
+        car.setInsured(true);
+        gameService.getCarRepository().save(car);
+        gameService.getManagerRepository().save(player);
+        return true;
     }
 
     public boolean signContract(Contract contract) {

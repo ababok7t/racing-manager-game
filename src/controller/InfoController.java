@@ -189,6 +189,12 @@ public class InfoController {
             Incident incident = race.getIncidents().get(playerId);
             io.showWarning("  Инцидент: " + incident.getType());
         }
+
+        if (race.getForceMajeurs().containsKey(playerId)) {
+            ForceMajeurResult fm = race.getForceMajeurs().get(playerId);
+            io.showWarning("  Форс-мажор: " + fm.getDescription()
+                    + (fm.isCarSurvived() ? " (болид спасён)" : " (болид уничтожен)"));
+        }
     }
 
     private static class RaceStatistics {

@@ -1,6 +1,7 @@
 package view;
 
 import model.Car;
+import model.race.ForceMajeurResult;
 import model.race.Incident;
 import model.race.Race;
 import model.race.Track;
@@ -29,7 +30,8 @@ public class RaceView {
             Car car = cars.get(i);
             io.showMessage((i + 1) + ". " + car.getName() +
                     " [Произв: " + String.format("%.2f", car.calculatePerformance()) +
-                    ", Износ: " + String.format("%.1f%%", car.getWearPercentage()) + "]");
+                    ", Износ: " + String.format("%.1f%%", car.getWearPercentage()) +
+                    ", Страховка: " + (car.isInsured() ? "да" : "нет") + "]");
         }
     }
 
@@ -72,6 +74,15 @@ public class RaceView {
             io.showMessage("\nИНЦИДЕНТЫ:");
             for (Incident incident : incidents.values()) {
                 io.showMessage("   - " + incident.getType());
+            }
+        }
+
+        Map<String, ForceMajeurResult> forceMajeurs = race.getForceMajeurs();
+        if (!forceMajeurs.isEmpty()) {
+            io.showMessage("\nФОРС-МАЖОР:");
+            for (ForceMajeurResult fm : forceMajeurs.values()) {
+                io.showMessage("   - " + fm.getDescription()
+                        + (fm.isCarSurvived() ? " (болид спасён)" : " (болид уничтожен)"));
             }
         }
 

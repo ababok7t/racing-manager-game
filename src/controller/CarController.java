@@ -105,6 +105,7 @@ public class CarController {
         io.showMessage("   Производительность: " +
                 String.format("%.2f", car.calculatePerformance()));
         io.showMessage("   Износ: " + String.format("%.1f%%", car.getWearPercentage()));
+        io.showMessage("   Страховка (разовая): " + (car.isInsured() ? "есть до спасения при форс-мажоре" : "нет"));
 
         if (car.hasBrokenComponents()) {
             io.showWarning("   Разрушенные компоненты! Ремонт невозможен — только замена.");

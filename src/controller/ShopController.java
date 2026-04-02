@@ -6,6 +6,7 @@ import model.staff.*;
 import model.market.*;
 import service.GameService;
 import service.MarketService;
+import service.ShopService;
 import repository.ContractRepository;
 import view.ConsoleIO;
 import java.util.*;
@@ -17,6 +18,49 @@ public class ShopController {
     public ShopController(GameService gameService, ConsoleIO io) {
         this.gameService = gameService;
         this.io = io;
+    }
+
+    public void buyCarInsurance() {
+        io.clearScreen();
+        Manager player = gameService.getPlayerManager();
+        io.showMessage("\n=== СТРАХОВКА БОЛИДА (разовая оплата) ===");
+        io.showMessage("Форс-мажор (наводнение, землетрясение, метеорит) не связан с ошибками пилота и инцидентами.");
+        io.showMessage("Без страховки болид при форс-мажоре уничтожается; со страховкой сохраняется, полис сгорает.");
+        io.showMessage(String.format("Стоимость полиса: $%,.0f", ShopService.CAR_INSURANCE_PRICE));
+        io.showMessage(String.format("Ваш бюджет: $%,.0f", player.getBudget()));
+
+        List<Car> cars = gameService.getPlayerCars().stream()
+                .filter(c -> c.isComplete() && !c.hasBrokenComponents() && !c.isInsured())
+                .toList();
+        if (cars.isEmpty()) {
+            io.showMessage("\nНет подходящих болидов: нужен собранный болид без разрушенных деталей и без действующей страховки.");
+            io.waitForEnter();
+            return;
+        }
+
+        io.showMessage("\nБолиды, доступные для страхования:");
+        for (int i = 0; i < cars.size(); i++) {
+            Car c = cars.get(i);
+            io.showMessage((i + 1) + ". " + c.getName());
+        }
+
+        int choice = io.getUserIntInput("\nВыберите болид (0 - назад): ", 0, cars.size());
+        if (choice == 0) return;
+
+        Car selected = cars.get(choice - 1);
+        if (!io.getUserConfirmation("Оформить разовую страховку для «" + selected.getName() + "»?")) {
+            io.waitForEnter();
+            return;
+        }
+
+        boolean success = gameService.getShopService().buyCarInsurance(selected.getId());
+        if (success) {
+            io.showSuccess("Страховка оформлена до ближайшего форс-мажора (одно спасение).");
+            io.showMessage("Остаток бюджета: $" + String.format("%,.0f", player.getBudget()));
+        } else {
+            io.showError("Не удалось оформить страховку (недостаточно средств или болид не подходит).");
+        }
+        io.waitForEnter();
     }
 
     public void buyComponents() {

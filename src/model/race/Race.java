@@ -17,6 +17,7 @@ public class Race {
     private final Map<String, Double> resultByManagerId;
     private final Map<String, Integer> positionByManagerId;
     private final Map<String, Incident> incidentsByManagerId;
+    private final Map<String, ForceMajeurResult> forceMajeurByManagerId;
 
     private boolean completed;
 
@@ -30,6 +31,7 @@ public class Race {
         this.resultByManagerId = new HashMap<>();
         this.positionByManagerId = new HashMap<>();
         this.incidentsByManagerId = new HashMap<>();
+        this.forceMajeurByManagerId = new HashMap<>();
         this.completed = false;
     }
 
@@ -76,6 +78,14 @@ public class Race {
 
     public Map<String, Incident> getIncidents() {
         return new HashMap<>(incidentsByManagerId);
+    }
+
+    public void addForceMajeur(String managerId, ForceMajeurResult result) {
+        forceMajeurByManagerId.put(managerId, result);
+    }
+
+    public Map<String, ForceMajeurResult> getForceMajeurs() {
+        return new HashMap<>(forceMajeurByManagerId);
     }
 
     public void setResult(String managerId, double totalTime) {

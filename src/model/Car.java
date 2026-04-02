@@ -16,11 +16,14 @@ public class Car {
 
     private boolean built;
 
+    private boolean insured;
+
     public Car(String name) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.managerId = null;
         this.built = false;
+        this.insured = false;
     }
 
     public String getId() {
@@ -81,6 +84,24 @@ public class Car {
 
     public void setBuilt(boolean built) {
         this.built = built;
+    }
+
+    public boolean isInsured() {
+        return insured;
+    }
+
+    public void setInsured(boolean insured) {
+        this.insured = insured;
+    }
+
+
+    public void applyTotalDestruction() {
+        engine = null;
+        transmission = null;
+        suspension = null;
+        aerodynamics = null;
+        tyres = null;
+        built = false;
     }
 
     public boolean isComplete() {

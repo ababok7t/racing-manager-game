@@ -35,7 +35,7 @@ public class GameController {
 
         while (isRunning) {
             mainMenuView.showMainMenu();
-            int choice = io.getUserIntInput("Выберите пункт меню: ", 1, 12);
+            int choice = io.getUserIntInput("Выберите пункт меню: ", 1, 13);
 
             switch (choice) {
                 case 1 -> raceController.startRace();
@@ -49,7 +49,8 @@ public class GameController {
                 case 9 -> infoController.viewOtherTeams();
                 case 10 -> infoController.viewRecentResults();
                 case 11 -> shopController.manageSponsorContracts();
-                case 12 -> exit();
+                case 12 -> shopController.buyCarInsurance();
+                case 13 -> exit();
                 default -> io.showError("Неверный выбор!");
             }
         }

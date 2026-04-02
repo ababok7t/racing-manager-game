@@ -134,6 +134,7 @@ public class RaceController {
         io.showMessage("  Погода: " + race.getWeather());
         io.showMessage("  Участников: " + (opponentsAdded + 1) + " (вы + " + opponentsAdded + " соперников)");
         io.showMessage("  Ваш болид: " + car.getName());
+        io.showMessage("  Страховка болида: " + (car.isInsured() ? "есть (разовая, до спасения)" : "нет — при форс-мажоре болид может быть уничтожен"));
         io.showMessage("  Ваш пилот: " + pilot.getName());
     }
 
@@ -164,6 +165,7 @@ public class RaceController {
 
         showPlayerResults(race);
         checkIncidents(race);
+        checkForceMajeur(race);
 
         io.waitForEnter();
     }
@@ -179,6 +181,18 @@ public class RaceController {
         io.showMessage("   Очки: " + points);
         io.showMessage("   Общий бюджет: $" + gameService.getPlayerManager().getBudget());
         io.showMessage("   Всего очков: " + gameService.getPlayerManager().getChampionshipPoints());
+    }
+
+    private void checkForceMajeur(Race race) {
+        ForceMajeurResult fm = race.getForceMajeurs().get(gameService.getPlayerManager().getId());
+        if (fm == null) return;
+
+        if (fm.isCarSurvived()) {
+            io.showWarning("\nФорс-мажор: " + fm.getDescription() + " — страховка сработала, болид цел.");
+        } else {
+            io.showError("\nФорс-мажор: " + fm.getDescription() + " — болид уничтожен (не было страховки).");
+            io.showMessage("   Соберите болид заново (раздел 3) после закупки компонентов (раздел 2).");
+        }
     }
 
     private void checkIncidents(Race race) {

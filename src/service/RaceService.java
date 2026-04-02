@@ -7,6 +7,8 @@ import model.components.*;
 import java.util.*;
 
 public class RaceService {
+    private static final double FORCE_MAJEUR_CHANCE = 0.08;
+
     private final GameService gameService;
     private final Random random;
 
@@ -186,6 +188,7 @@ public class RaceService {
     ) {
         double totalTime = 0;
         boolean hasIncident = false;
+        boolean forceMajeurResolved = false;
 
         int laps = race.getTrack().getLaps();
         for (int lap = 0; lap < laps; lap++) {
@@ -196,6 +199,25 @@ public class RaceService {
             }
 
             totalTime += lapTime;
+
+            if (managerId.equals(gameService.getPlayerManager().getId())
+                    && isMidRaceCheckpoint(lap, laps)
+                    && !forceMajeurResolved
+                    && random.nextDouble() < FORCE_MAJEUR_CHANCE) {
+                forceMajeurResolved = true;
+                ForceMajeurType fmType = ForceMajeurType.values()[random.nextInt(ForceMajeurType.values().length)];
+
+                if (car.isInsured()) {
+                    car.setInsured(false);
+                    gameService.getCarRepository().save(car);
+                    race.addForceMajeur(managerId, new ForceMajeurResult(fmType, true));
+                } else {
+                    car.applyTotalDestruction();
+                    gameService.getCarRepository().save(car);
+                    race.addForceMajeur(managerId, new ForceMajeurResult(fmType, false));
+                    return Double.MAX_VALUE;
+                }
+            }
 
             if (lap % 10 == 0 && lap > 0 && !hasIncident) {
                 Optional<Incident> incident = checkIncident(car, pilot, race.getTrack(), race.getWeather());
@@ -213,6 +235,12 @@ public class RaceService {
 
         applyWear(car, pilot, laps);
         return totalTime;
+    }
+
+    private boolean isMidRaceCheckpoint(int lapIndex, int laps) {
+        if (laps <= 0) return false;
+        if (laps == 1) return lapIndex == 0;
+        return lapIndex == laps / 2;
     }
 
     private void setPositionsAndResults(Race race, Map<String, Double> totalTimes) {

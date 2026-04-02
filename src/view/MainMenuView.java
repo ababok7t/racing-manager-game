@@ -31,7 +31,8 @@ public class MainMenuView {
         System.out.println("9. Просмотреть другие команды");
         System.out.println("10. Просмотреть результаты последних гонок");
         System.out.println("11. Контракты со спонсорами");
-        System.out.println("12. Выход");
+        System.out.println("12. Страховка болида (разовая)");
+        System.out.println("13. Выход");
         System.out.println("=".repeat(50));
     }
 }
